@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+	<string name="home">首頁</string>	
+	<string name="settings">設定</string>
+	<string name="openWindow">開啟新頁</string>
+	<string name="newWindow">新視窗</string>
+	
+	<!-- Entry -->
+	<string name="history">記錄</string>
+	<string name="favorite">我的最愛</string>
+	<string name="copied">複製成功</string>
+	
+	<!-- Main Window -->
+	<string name="window_title_scanner">掃描</string>
+	<string name="no_item_quote_history">開始掃描QR碼吧！</string>
+	<string name="no_item_quote_loved">沒任何你喜愛的QR碼\.\.\.</string>
+	<string name="toast_loggedin">歡迎加入世界的行列</string>
+	<string name="confirm_option_delete_both">兩者都刪除</string>
+	<string name="confirm_option_delete_local_only">只刪掉手機記錄</string>
+	<string name="confirm_option_cancel">取消</string>
+	<string name="confirm_title_delete_from_fb">同時刪掉臉書上的討論列嗎？</string>
+	<string name="toast_deleted_from_fb">在臉書上已成功刪除</string>
+	<string name="alert_cant_delete_fb">無法刪除臉書上的討論列。請等下再試一次</string>
+	
+	<!-- LoadingWidget -->
+	<string name="button_title_login_fb">使用Facebook登入</string>
+	<string name="button_subtitle_join_world">加入世界潮流</string>
+	<string name="button_title_not_now">之後再說</string>
+	<string name="button_title_why">WHY</string>
+	
+	<!-- WhyWindow -->
+	<string name="navibar_button_title_close">關閉</string>
+	<string name="window_title_why_fb">為何要Facebook</string>
+	<string name="para_title_qute">Qute在Facebook上</string>
+	<string name="confirm_option_visit_qute">拜訪Qute臉書專頁</string>
+	<string name="para_text_qute">Qute上收集了世界上大家分享的QR碼，借由這社群你可以:</string>
+	<string name="para_tip_share">分享某個QR碼的一些心得或秘密</string>
+	<string name="para_tip_read_comment">看看來自世界上對某QR碼的回應</string>
+	<string name="para_tip_post">在Qute專頁上創建QR碼的討論串，讓大家分享討論</string>
+	<string name="para_title_more">這是全部了...</string>
+	<string name="para_text_more">Qute團隊對你的資料沒什麼興趣，我們沒有存你的任何資料。</string>
+	
+	<!-- QRRow -->
+	<string name="row_title_offline">Offline</string>
+	
+	<!-- Result -->
+	<string name="no_item_title_share_first_tip">分享些什麼吧！</string>
+	<string name="guide_text_putonline">在Qute臉書專頁發佈一個討論串，讓大家分享心得</string>
+	<string name="guide_title_putonline">拉上線</string>
+	<string name="guide_text_sharetip">這QR碼值得繼續看下去嗎？在社群裡分享些心得</string>
+	<string name="guide_title_sharetip">分享心得</string>
+	<string name="guide_text_open_in_safari">在Safari開啓</string>
+	<string name="guide_text_check_post">在Qute上的連結</string>
+	<string name="placeholder_invalid_qr">嗯...這個QR碼怪怪的</string>
+	<string name="placeholder_qr_title">無標題</string>
+	<string name="switch_title_putonline">發佈在Qute上</string>
+	<string name="confirm_option_visit_post_fb">在Safari開啓</string>
+	<string name="confirm_option_copy">複製</string>
+	<string name="toast_copied">複製成功</string>
+	<string name="button_title_offline">Offline</string>
+	<string name="button_title_online">Online</string>
+	<string name="placeholder_say_textfield">分享些心得\.\.\.</string>
+	<string name="quote_not_online">人人為我，我為人人</string>
+	<string name="hint_tap_twice">點擊兩次來複製文字</string>
+	<string name="button_title_login_fb_result">用Facebook登入</string>
+	<string name="login_fb_subtitle">加入世界潮流</string>
+	<string name="button_title_why">WHY?</string>
+	<string name="confirm_option_delete_post">刪除</string>
+	<string name="confirm_title_delete_post">確定要將這討論串從Facebook上刪除嗎？</string>
+	<string name="alert_cant_delete">發生未知的錯誤，請待會兒再試試看。</string>
+	<string name="toast_deleted_post">已從Facebook上刪除</string>
+	<string name="alert_cant_delete_post">無法刪除Facebook上的討論串，請待會兒再試試</string>
+	<string name="confirm_option_create">建立</string>
+	<string name="confirm_option_no">不了</string>
+	<string name="confirm_title_create_post">仍然要將這個內容傳上Qute臉書專頁嗎？</string>
+	<string name="confirm_msg_create_post">這QR碼看起來不是單純的連結</string>
+	<string name="network_down">未連接到網路</string>
+	
+	<!-- Settings -->
+	<string name="window_title_settings">設定</string>
+	<string name="settings_item_visit_qute">拜訪Qute臉書專頁</string>
+	<string name="email_subject">Hello from Qute</string>
+	<string name="email_body">Hi Paper!</string>
+	<string name="claim_msg">All rights reserved.</string>
+	<string name="toolbar_button_title_done">完成</string>
+	<string name="toolbar_button_title_cancel">取消</string>
+	<string name="alert_title_lang_changed">語言已更改</string>
+	<string name="alert_msg_lang_changed">建議重新開啟App，讓設定生效</string>
+	<string name="navibar_button_title_save">儲存</string>
+	<string name="navibar_button_title_cancel">取消</string>
+	<string name="settings_title_language">語言</string>
+	
+	<!-- Toast -->
+	<string name="toast placeholder">嗯...你是想幹嘛?</string>
+</resources>

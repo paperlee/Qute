@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+	<string name="home">Home</string>	
+	<string name="settings">Settings</string>
+	<string name="openWindow">Open New Window</string>
+	<string name="newWindow">New Window</string>
+	
+	<!-- Entry -->
+	<string name="history">History</string>
+	<string name="favorite">Loved</string>
+	<string name="copied">Copied!</string>
+	
+	<!-- Main Window -->
+	<string name="window_title_scanner">Scanner</string>
+	<string name="no_item_quote_history">Scan a QR code right now!</string>
+	<string name="no_item_quote_loved">Nothing you loved...</string>
+	<string name="toast_loggedin">Welcome to the world</string>
+	<string name="confirm_option_delete_both">Delete Both</string>
+	<string name="confirm_option_delete_local_only">Delete Local Only</string>
+	<string name="confirm_option_cancel">Cancel</string>
+	<string name="confirm_title_delete_from_fb">You own the post. Delete it from Qute as well?</string>
+	<string name="toast_deleted_from_fb">Deleted from Facebook</string>
+	<string name="alert_cant_delete_fb">Can\'t delete the post in Facebook. Please try again later.</string>
+	
+	<!-- LoadingWidget -->
+	<string name="button_title_login_fb">Login Facebook</string>
+	<string name="button_subtitle_join_world">To join the world</string>
+	<string name="button_title_not_now">Not Now</string>
+	<string name="button_title_why">WHY</string>
+	
+	<!-- WhyWindow -->
+	<string name="navibar_button_title_close">Close</string>
+	<string name="window_title_why_fb">Why Facebook?</string>
+	<string name="para_title_qute">Qute Facebook Fan Page</string>
+	<string name="confirm_option_visit_qute">Open in Safari</string>
+	<string name="para_text_qute">Qute is the place to collect QR code from the world. With it the folks can:</string>
+	<string name="para_tip_share">Share tips about the QR code</string>
+	<string name="para_tip_read_comment">Read comments from the world</string>
+	<string name="para_tip_post">Create a post in Qute. Broadcast to public.</string>
+	<string name="para_title_more">And nothing more...</string>
+	<string name="para_text_more">Qute team is not interested in your personal profile in facebook. Your info won’t be recorded besides your phone and Facebook.</string>	
+	
+	<!-- QRRow -->
+	<string name="row_title_offline">Offline</string>
+	
+	<!-- Result -->
+	<string name="no_item_title_share_first_tip">Share the first tip!</string>
+	<string name="guide_text_putonline">Create a post in Qute Facebook Fan Page</string>
+	<string name="guide_title_putonline">Put online</string>
+	<string name="guide_text_sharetip">Is the QR worth reading?\nContribute to the world</string>
+	<string name="guide_title_sharetip">Share a tip</string>
+	<string name="guide_text_open_in_safari">Open link in Safari</string>
+	<string name="guide_text_check_post">Check the post in Qute</string>
+	<string name="placeholder_invalid_qr">Well...You shall take a valid QR code</string>
+	<string name="placeholder_qr_title">BLANK TITLE</string>
+	<string name="switch_title_putonline">Post to Qute</string>
+	<string name="confirm_option_visit_post_fb">Visit in Facebook</string>
+	<string name="confirm_option_copy">Copy</string>
+	<string name="toast_copied">copied</string>
+	<string name="button_title_offline">Offline</string>
+	<string name="button_title_online">Online</string>
+	<string name="placeholder_say_textfield">Share a tip\.\.\.</string>
+	<string name="quote_not_online">All for One. One for All.</string>
+	<string name="hint_tap_twice">Tap result text twice to copy</string>
+	<string name="button_title_login_fb_result">Log in Facebook</string>
+	<string name="login_fb_subtitle">to join the world</string>
+	<string name="button_title_why">WHY?</string>
+	<string name="confirm_option_delete_post">Confirm</string>
+	<string name="confirm_title_delete_post">Delete the post from Qute Facebook Fan Page?</string>
+	<string name="alert_cant_delete">Something went wrong. Try again later</string>
+	<string name="toast_deleted_post">Deleted from FB</string>
+	<string name="alert_cant_delete_post">Can\'t delete the post. Try again later.</string>
+	<string name="confirm_option_create">Create</string>
+	<string name="confirm_option_no">No</string>
+	<string name="confirm_title_create_post">Publish it in Qute fanpage?</string>
+	<string name="confirm_msg_create_post">The scan result looks not like a link.</string>
+	<string name="network_down">Internet disconnected</string>
+	
+	<!-- Settings -->
+	<string name="window_title_settings">Settings</string>
+	<string name="settings_item_visit_qute">Vist Qute in Facebook</string>
+	<string name="email_subject">Hello from Qute</string>
+	<string name="email_body">Hi Paper!</string>
+	<string name="claim_msg">All rights reserved.</string>
+	<string name="toolbar_button_title_done">Done</string>
+	<string name="toolbar_button_title_cancel">Cancel</string>
+	<string name="alert_title_lang_changed">Language changed</string>
+	<string name="alert_msg_lang_changed">Restart the app to apply the change.</string>
+	<string name="navibar_button_title_save">Save</string>
+	<string name="navibar_button_title_cancel">Cancel</string>
+	<string name="settings_title_language">Language</string>
+	
+	<!-- Toast -->
+	<string name="toast placeholder">Well...What\'s the message?</string>
+</resources>
