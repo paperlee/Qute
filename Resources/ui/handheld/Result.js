@@ -2129,7 +2129,8 @@ function Result(qrData, qrRow) {
 					likes : comments.data[i]['like_count'],
 					from_me : comments.data[i]['can_remove'], //TODO: real check if it's from me
 					time : comments.data[i]['created_time'],
-					cid : comments.data[i]['id']
+					cid : comments.data[i]['id'],
+					user_likes : comments.data[i]['user_likes']
 				};
 
 				temp_row = new CommentRow(comment_data);
