@@ -28,6 +28,12 @@
 	<string name="button_title_not_now">Not Now</string>
 	<string name="button_title_why">WHY</string>
 	
+	<!-- CommentRow -->
+	<string name="like_success">Voted UP!</string>
+	<string name="like_unsuccess">Something wrong. Try voting again.</string>
+	<string name="dislike_success">Voted down...</string>
+	<string name="dislike_unsuccess">Something wrong. Try again later.</string>
+	
 	<!-- WhyWindow -->
 	<string name="navibar_button_title_close">Close</string>
 	<string name="window_title_why_fb">Why Facebook?</string>

@@ -28,6 +28,12 @@
 	<string name="button_title_not_now">之後再說</string>
 	<string name="button_title_why">WHY</string>
 	
+	<!-- CommentRow -->
+	<string name="like_success">已支持！</string>
+	<string name="like_unsuccess">系统好像出了问题，请再试试</string>
+	<string name="dislike_success">成功取消支持...</string>
+	<string name="dislike_unsuccess">系统好像出了问题，请再试试</string>
+	
 	<!-- WhyWindow -->
 	<string name="navibar_button_title_close">关闭</string>
 	<string name="window_title_why_fb">为何要Facebook</string>

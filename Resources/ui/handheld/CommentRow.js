@@ -155,7 +155,7 @@ function CommentRow(rowData) {
 			fb.requestWithGraphPath('/'+rowData['cid']+'/likes',{},'DELETE',function(e){
 				if (e.success){
 					//alert('dislike success!');
-					var toastLiked = new Toast(L('disliked'));
+					var toastLiked = new Toast(L('dislike_success'));
 					self.add(toastLiked);
 					rowData['user_likes'] = false;
 					
@@ -166,7 +166,7 @@ function CommentRow(rowData) {
 						//alert('unknown error');
 					}
 					buttonUpVote.backgroundImage = '/images/icon_gooded.png';
-					var toastLiked = new Toast(L('unsuccess'));
+					var toastLiked = new Toast(L('dislike_unsuccess'));
 					self.add(toastLiked);
 					rowData['likes'] = parseInt(rowData['likes']) + 1;
 					buttonUpVote.title = rowData['likes'];
@@ -183,7 +183,7 @@ function CommentRow(rowData) {
 			fb.requestWithGraphPath('/'+rowData['cid']+'/likes',{},'POST',function(e){
 				if (e.success){
 					//alert('like success!');
-					var toastLiked = new Toast(L('liked'));
+					var toastLiked = new Toast(L('like_success'));
 					self.add(toastLiked);
 					rowData['user_likes'] = true;
 				} else {
@@ -193,7 +193,7 @@ function CommentRow(rowData) {
 						//alert('unknown error');
 					}
 					buttonUpVote.backgroundImage = '/images/icon_good.png';
-					var toastLiked = new Toast(L('unsuccess'));
+					var toastLiked = new Toast(L('like_unsuccess'));
 					self.add(toastLiked);
 					
 					rowData['likes'] = parseInt(rowData['likes']) - 1;
