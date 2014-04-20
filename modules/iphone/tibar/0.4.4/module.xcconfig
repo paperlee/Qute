@@ -10,7 +10,7 @@
 //
 // How to add a Framework (example)
 //
-OTHER_LDFLAGS=$(inherited) -framework AVFoundation -framework CoreMedia -framework CoreVideo -framework QuartzCore /usr/lib/libiconv.dylib
+// OTHER_LDFLAGS=$(inherited) -framework Foo
 //
 // Adding a framework for a specific version(s) of iPhone:
 //
