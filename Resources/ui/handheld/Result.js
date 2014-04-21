@@ -1305,7 +1305,16 @@ function Result(qrData, qrRow) {
 		separatorStyle : Ti.UI.iPhone.TableViewCellSelectionStyle.NONE,
 		headerPullView : pullDownInstructionView
 	});
-
+	
+	//Scroll tableview to make sure the result text visible
+	var display_height = Ti.Platform.displayCaps.platformHeight-44-20; //The max height of one-page on device
+	Ti.API.info('[1]pic height is '+picFrame.height);
+	Ti.API.info('[1]display height is '+display_height);
+	if (picFrame.height >  display_height){
+		Ti.API.info('[2]Shall top to '+(picFrame.height-display_height));
+		table.scrollToTop(picFrame.height-display_height);
+	}
+	
 	//wholeView.add(sayPanel);
 	wholeView.add(table);
 
@@ -1466,6 +1475,9 @@ function Result(qrData, qrRow) {
 				//work done! hide loading activity
 				loadingView.visible = false;
 				loadingIcon.hide();
+				
+				//reset switching to false
+				switchOnFb.switching = false;
 			} else {
 				if (e.error) {
 					switchOnFb.value = true;
@@ -1481,7 +1493,10 @@ function Result(qrData, qrRow) {
 				//work done! hide loading activity
 				loadingView.visible = false;
 				loadingIcon.hide();
-
+				
+				//reset switching to false
+				switchOnFb.switching = false;
+				
 				//enable comment feature
 				say.visible = true;
 				sendButton.visible = true;
