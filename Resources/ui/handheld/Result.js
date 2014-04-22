@@ -973,7 +973,8 @@ function Result(qrData, qrRow) {
 			}]
 		}
 	});
-
+	
+	//TODO: Adjust the resultText width to leave space for buttonShare
 	var resultText = Ti.UI.createLabel({
 		width : 280,
 		left : 20,
@@ -999,7 +1000,7 @@ function Result(qrData, qrRow) {
 	});
 
 	var rawLabel = Ti.UI.createLabel({
-		width : 280,
+		width : 246,
 		wordWrap : false,
 		bottom : 30,
 		left : 20,
@@ -1038,6 +1039,7 @@ function Result(qrData, qrRow) {
 	blankSpaceBottom.add(timeBlock);
 	blankSpaceBottom.add(readableTitle);
 	blankSpaceBottom.add(rawLabel);
+	//blankSpaceBottom.add(buttonShare);
 
 	//top margin: 36, bottom margin:30
 	var title_area_height = 44;
@@ -1075,12 +1077,13 @@ function Result(qrData, qrRow) {
 		image : '/images/icon_share.png',
 		tintColor : 'white',
 		right : 14,
-		top : 14,
+		bottom : 6,
 		style : Ti.UI.iPhone.SystemButtonStyle.PLAIN
 	});
 
-	blankSpaceTop.add(buttonShare);
-
+	//blankSpaceTop.add(buttonShare);
+	blankSpaceBottom.add(buttonShare);
+	
 	buttonShare.addEventListener('click', function(e) {
 		var share_string;
 		var activitySettings = {};
@@ -1308,10 +1311,10 @@ function Result(qrData, qrRow) {
 	
 	//Scroll tableview to make sure the result text visible
 	var display_height = Ti.Platform.displayCaps.platformHeight-44-20; //The max height of one-page on device
-	Ti.API.info('[1]pic height is '+picFrame.height);
-	Ti.API.info('[1]display height is '+display_height);
+	//Ti.API.info('[1]pic height is '+picFrame.height);
+	//Ti.API.info('[1]display height is '+display_height);
 	if (picFrame.height >  display_height){
-		Ti.API.info('[2]Shall top to '+(picFrame.height-display_height));
+		//Ti.API.info('[2]Shall top to '+(picFrame.height-display_height));
 		table.scrollToTop(picFrame.height-display_height);
 	}
 	
