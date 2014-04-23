@@ -115,13 +115,14 @@ function MainWindow() {
 	var TiBar = require('tibar');
 
 	scannerButton.addEventListener('click', function() {
-		Ti.API.info('!!Hi You click the button');
+		Ti.API.info('Start scanning');
 		TiBar.scan({
 			// simple configuration for iPhone simulator
 			configure : {
 				classType : "ZBarReaderViewController",
 				sourceType : "Camera",
 				cameraMode : "Sampling",
+				videoQuality : "UIImagePickerControllerQualityTypeIFrame960x540",
 				config : {
 					"showsCameraControls" : true,
 					"showsHelpOnFail" : true,

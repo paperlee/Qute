@@ -39,7 +39,7 @@
         <theme>default</theme>
     </mobileweb>
     <modules>
-        <module platform="iphone" version="0.4.4">tibar</module>
+        <module platform="iphone" version="0.4.5">tibar</module>
         <module platform="android">facebook</module>
         <module platform="iphone">facebook</module>
         <module platform="iphone">dk.napp.social</module>
