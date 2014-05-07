@@ -97,5 +97,5 @@
 	<string name="settings_title_language">語言</string>
 	
 	<!-- Toast -->
-	<string name="toast placeholder">嗯...你是想幹嘛?</string>
+	<string name="toast_placeholder">嗯...你是想幹嘛?</string>
 </resources>

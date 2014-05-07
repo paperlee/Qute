@@ -97,5 +97,5 @@
 	<string name="settings_title_language">Language</string>
 	
 	<!-- Toast -->
-	<string name="toast placeholder">Well...What\'s the message?</string>
+	<string name="toast_placeholder">Well...What\'s the message?</string>
 </resources>

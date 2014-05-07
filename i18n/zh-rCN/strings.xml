@@ -11,7 +11,7 @@
 	<string name="copied">Copied!</string>
 
 	<!-- Main Window -->
-	<string name="win​​dow_title_scanner">扫描</string>
+	<string name="window_title_scanner">扫描</string>
 	<string name="no_item_quote_history">开始扫描QR码吧！</string>
 	<string name="no_item_quote_loved">没任何你喜爱的QR码\.\.\.</string>
 	<string name="toast_loggedin">欢迎加入世界的行列</string>
@@ -97,5 +97,5 @@
 	<string name="settings_title_language">语言</string>
 
 	<!-- Toast -->
-	<string name="toast placeholder">嗯...你是想干嘛？</string>
+	<string name="toast_placeholder">嗯...你是想干嘛？</string>
 </resources>

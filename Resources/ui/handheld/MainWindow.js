@@ -115,6 +115,9 @@ function MainWindow() {
 	var TiBar = require('tibar');
 
 	scannerButton.addEventListener('click', function() {
+		if (Ti.Platform.osname === 'android'){
+			return;
+		}
 		Ti.API.info('Start scanning');
 		TiBar.scan({
 			// simple configuration for iPhone simulator
