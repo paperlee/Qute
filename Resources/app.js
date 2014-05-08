@@ -106,7 +106,14 @@ var locale = require('com.shareourideas.locale');
 	
 	db.close();
 	
-	var Window = require('ui/handheld/MainWindow');
+	if (osname === "android"){
+		//for android
+		var Window = require('ui/handheld/a/MainWindow');
+	} else {
+		//for iphone
+		var Window = require('ui/handheld/MainWindow');
+	}
+	
 	
 	var self = new Window();
 	self.open();
