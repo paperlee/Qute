@@ -44,6 +44,7 @@
         <module platform="iphone">dk.napp.social</module>
         <module platform="iphone">com.shareourideas.locale</module>
         <module platform="iphone" version="0.4.5">tibar</module>
+        <module platform="TiCookiejar">build</module>
     </modules>
     <deployment-targets>
         <target device="android">false</target>

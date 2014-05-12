@@ -18,6 +18,15 @@ if (Ti.version < 1.8 ) {
 var DB_VERSION = 0.3;
 
 var locale = require('com.shareourideas.locale');
+var dropbox = require('dropbox');
+var Keys = require('keys');
+var keys = new Keys();
+
+var client = dropbox.createClient({
+	app_key:keys.dropbox_appkey,
+	app_secret:keys.dropbox_appskey,
+	root:'dropbox'
+});
 
 // This is a single context application with mutliple windows in a stack
 (function() {
@@ -41,6 +50,10 @@ var locale = require('com.shareourideas.locale');
 	
 	if (!Ti.App.Properties.hasProperty('loggedin')){
 		Ti.App.Properties.setBool('loggedin',false);
+	}
+	
+	if (!Ti.App.Properties.hasProperty('syncing')){
+		Ti.App.Properties.setBool('syncing',false);
 	}
 	
 	//TODO:Set uo language! Below code not work!

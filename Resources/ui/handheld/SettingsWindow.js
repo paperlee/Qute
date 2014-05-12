@@ -10,6 +10,7 @@ var langs = ['en', 'zh-Hant', 'zh-Hans'];
 var langsName = ['English', '繁體中文', '简体中文'];
 
 var locale = require('com.shareourideas.locale');
+var dropbox = require('dropbox');
 
 var URL_QUTE = 'https://www.facebook.com/pages/Qute/368537286624382';
 
@@ -40,7 +41,6 @@ function SettingsWindow() {
 		window : main
 	});
 
-	//TODO:Set uo language! Below code not work!
 	var settingsSection = Ti.UI.createTableViewSection({
 
 	});
@@ -221,7 +221,62 @@ function SettingsWindow() {
 	});
 
 	settingsSection.add(languageRow);
-
+	
+	var syncRow = Ti.UI.createTableViewRow({
+		height:44,
+		selectionStyle:Ti.UI.iPhone.TableViewCellSelectionStyle.GRAY
+	});
+	
+	var syncTitle = Ti.UI.createLabel({
+		font : {
+			fontSize : 16
+		},
+		text : L('settings_title_sync'),
+		left : 12,
+		color : 'black'
+	});
+	
+	var syncSwitch = Ti.UI.createSwitch({
+		value : Ti.App.Properties.getBool('syncing'),
+		color : COLOR_PURPLE,
+		right:12
+	});
+	
+	syncRow.add(syncTitle);
+	syncRow.add(syncSwitch);
+	
+	settingsSection.add(syncRow);
+	
+	// Create dropbox client if syncing
+	
+	
+	var getDelta = function(){
+		var options = {
+			
+		};
+		client.delta(option, function(status, reply){
+			Ti.API.info(status);
+			Ti.API.info(reply);
+		});
+	};
+	
+	syncSwitch.addEventListener('change',function(e){
+		if (e.value){
+			console.log('Start connecting to Dropbox');
+			if (client.isAuthorized()){
+				console.log('Already logged in');
+				getDelta();
+			} else {
+				console.log('Go logging in');
+				client.login(function(options){
+					console.log('Great! login done!'+options.toString());
+					getDelta();
+					
+				});
+			}
+		}
+	});
+	
 	var linkSection = Ti.UI.createTableViewSection({
 
 	});
