@@ -156,13 +156,13 @@ function SettingsWindow() {
 			languageValue.text = langsName[lang_at];
 
 		}
-		
-		if (lang_at != lang_origin){
+
+		if (lang_at != lang_origin) {
 			btnSave.enabled = true;
 		} else {
 			btnSave.enabled = false;
 		}
-		
+
 		Ti.API.info('The locale is ' + Ti.Platform.locale);
 		Ti.API.info('Current locale is ' + Ti.App.Properties.getString('locale'));
 		Ti.API.info('Custom? ' + Ti.App.Properties.getBool('customLocal'));
@@ -181,8 +181,6 @@ function SettingsWindow() {
 		Ti.API.info('PICKER CANCELED');
 
 	});
-
-	
 
 	var langViewShowAnimation = Ti.UI.createAnimation({
 		duration : 500,
@@ -221,12 +219,12 @@ function SettingsWindow() {
 	});
 
 	settingsSection.add(languageRow);
-	
+
 	var syncRow = Ti.UI.createTableViewRow({
-		height:44,
-		selectionStyle:Ti.UI.iPhone.TableViewCellSelectionStyle.GRAY
+		height : 44,
+		selectionStyle : Ti.UI.iPhone.TableViewCellSelectionStyle.GRAY
 	});
-	
+
 	var syncTitle = Ti.UI.createLabel({
 		font : {
 			fontSize : 16
@@ -235,48 +233,64 @@ function SettingsWindow() {
 		left : 12,
 		color : 'black'
 	});
-	
+
 	var syncSwitch = Ti.UI.createSwitch({
 		value : Ti.App.Properties.getBool('syncing'),
 		color : COLOR_PURPLE,
-		right:12
+		right : 12
 	});
-	
+
 	syncRow.add(syncTitle);
 	syncRow.add(syncSwitch);
-	
+
 	settingsSection.add(syncRow);
-	
+
 	// Create dropbox client if syncing
-	
-	
-	var getDelta = function(){
+
+	var getDelta = function() {
 		var options = {
-			
+
 		};
-		client.delta(option, function(status, reply){
+		client.delta(options, function(status, reply) {
 			Ti.API.info(status);
 			Ti.API.info(reply);
+			/*console.log(typeof reply);
+			 if (reply['error']){
+			 console.log('Error!');
+			 client.login(function(options){
+			 //console.log('Great! login done!'+options.toString());
+			 getDelta();
+
+			 });
+			 }*/
 		});
 	};
-	
-	syncSwitch.addEventListener('change',function(e){
-		if (e.value){
+
+	Ti.App.addEventListener('dropbox_error', function(e) {
+		client.login(function(options) {
+			//console.log('Great! login done!'+options.toString());
+			getDelta();
+
+		});
+	});
+
+	syncSwitch.addEventListener('change', function(e) {
+		if (e.value) {
 			console.log('Start connecting to Dropbox');
-			if (client.isAuthorized()){
+			if (client.isAuthorized()) {
 				console.log('Already logged in');
 				getDelta();
 			} else {
 				console.log('Go logging in');
-				client.login(function(options){
-					console.log('Great! login done!'+options.toString());
+				client.login(function(options) {
+					console.log('Great! login done!' + options.toString());
 					getDelta();
-					
+
 				});
 			}
 		}
 	});
-	
+
 	var linkSection = Ti.UI.createTableViewSection({
 
 	});
@@ -324,7 +338,7 @@ function SettingsWindow() {
 	var authorSection = Ti.UI.createTableViewSection({
 
 	});
-	
+
 	//Tweet me option
 	var tweetMeRow = Ti.UI.createTableViewRow({
 		height : 44,
@@ -346,7 +360,7 @@ function SettingsWindow() {
 	});
 
 	tweetMeRow.addEventListener('click', function(e) {
-		if (!Ti.Platform.openURL('twitter://user?screen_name=paperli')){
+		if (!Ti.Platform.openURL('twitter://user?screen_name=paperli')) {
 			Ti.Platform.openURL('http://twitter.com/paperli');
 		}
 	});
@@ -355,7 +369,7 @@ function SettingsWindow() {
 	tweetMeRow.add(tweetMeView);
 
 	authorSection.add(tweetMeRow);
-	
+
 	//Email me option
 	var emailMeRow = Ti.UI.createTableViewRow({
 		height : 44,
@@ -389,7 +403,7 @@ function SettingsWindow() {
 	emailMeRow.add(emailMeView);
 
 	authorSection.add(emailMeRow);
-	
+
 	var table = Ti.UI.createTableView({
 		style : Ti.UI.iPhone.TableViewStyle.GROUPED
 	});
@@ -439,7 +453,7 @@ function SettingsWindow() {
 			transition : Ti.UI.iPhone.AnimationStyle.CURL_DOWN
 		});
 	});
-	
+
 	//Save the settings
 	btnSave.addEventListener('click', function(e) {
 
@@ -450,15 +464,15 @@ function SettingsWindow() {
 			//Must re-launch the app to make the change of lang.
 
 			if (lang_at == 0) {
-			 //en
-			 locale.setLocale("en");
-			 } else if (lang_at == 1) {
-			 //zh_TW
-			 locale.setLocale("zh_TW");
-			 } else {
-			 //zh_CN
-			 locale.setLocale("zh_CN");
-			 }
+				//en
+				locale.setLocale("en");
+			} else if (lang_at == 1) {
+				//zh_TW
+				locale.setLocale("zh_TW");
+			} else {
+				//zh_CN
+				locale.setLocale("zh_CN");
+			}
 
 			var alertUpdateLang = Ti.UI.createAlertDialog({
 				title : L('alert_title_lang_changed'),
@@ -467,13 +481,13 @@ function SettingsWindow() {
 
 			alertUpdateLang.show();
 		}
-		
+
 		navWin.close({
 			transition : Ti.UI.iPhone.AnimationStyle.CURL_DOWN
 		});
 
 	});
-	
+
 	return main;
 
 };

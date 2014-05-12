@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2013 Aaron K. Saunders
+* Copyright (c) 2012-2013 Aaron K. Saunders
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -18,14 +18,17 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
- * 
- */
-// 
+*
+*/
+//
 // based off of code from https://github.com/sintaxi/node-dbox
 //
 /**
  * OAUTH CLIENT CODE
  */
+
+var COLOR_PURPLE = '#9857a7';
+
 var oauth = function(consumerKey, consumerSecret) {
 
 	var encode = function(data) {
@@ -71,13 +74,13 @@ exports.createClient = function(config) {
 	// Create Global "extend" method
 	//
 	var extend = function(obj, extObj) {
-		if(arguments.length > 2) {
-			for(var a = 1; a < arguments.length; a++) {
+		if (arguments.length > 2) {
+			for (var a = 1; a < arguments.length; a++) {
 				extend(obj, arguments[a]);
 			}
 		} else {
-			for(var i in extObj) {
-				if(i){
+			for (var i in extObj) {
+				if (i) {
 					obj[i] = extObj[i];
 				}
 			}
@@ -92,7 +95,7 @@ exports.createClient = function(config) {
 		var token, that = this;
 
 		var raw = Ti.App.Properties.getString('DROPBOX_TOKENS', '');
-		if(!raw) {
+		if (!raw) {
 			return null;
 		}
 
@@ -104,10 +107,10 @@ exports.createClient = function(config) {
 			return null;
 		}
 
-		if(token.accessToken) {
+		if (token.accessToken) {
 			that.accessToken = token.accessToken;
 		}
-		if(token.accessTokenSecret) {
+		if (token.accessTokenSecret) {
 			that.accessTokenSecret = token.accessTokenSecret;
 		}
 
@@ -131,7 +134,7 @@ exports.createClient = function(config) {
 				Ti.API.info('ONSENDSTREAM - PROGRESS: ' + e.progress);
 			},
 			onload : function() {
-				if(client.status == 200) {
+				if (client.status == 200) {
 					Ti.API.info(this.responseText);
 				} else {
 					Ti.API.info(this.responseText);
@@ -141,14 +144,15 @@ exports.createClient = function(config) {
 			onerror : function() {
 				Ti.API.error(' FAILED to send a request!');
 				Ti.API.info(this.responseText);
+				Ti.App.fireEvent('dropbox_error',{});
 			}
 		});
 
 		client.open(args.method, args.url);
-		if(Ti.Platform.osname === 'iphone') {
+		if (Ti.Platform.osname === 'iphone') {
 			client.setRequestHeader("Content-Type", args.headers);
 		}
-		if(args.method === 'PUT') {
+		if (args.method === 'PUT') {
 
 			client.send(args.body);
 		} else {
@@ -172,15 +176,20 @@ exports.createClient = function(config) {
 				Ti.API.info(reply);
 
 				var authorizeUICallback = function(e) {
-
-					if(e.url.indexOf('&oauth_token') != -1) {
-						var tokens = e.url.split("&");
+					var url = Ti.App.getArguments().url;
+					console.log('current url: '+url);
+					
+					if (url.indexOf('?oauth_token') != -1) {
+						var url_parts = url.split("?");
+						var tokens = url_parts[1].split('&');
 						ACCESS_TOKEN_SECRET = tokens[1].split("=")[1];
+						
+						console.log('in case1: '+ACCESS_TOKEN_SECRET);
 
 						destroyAuthorizeUI();
 						var options = {
 							oauth_token : reply.oauth_token, // required
-							oauth_token_secret : reply.oauth_token_secret  // required
+							oauth_token_secret : reply.oauth_token_secret // required
 						};
 
 						// get access
@@ -199,10 +208,10 @@ exports.createClient = function(config) {
 						});
 						return;
 
-					} else if('https://www.dropbox.com/' === e.url) {
+					} else if ('https://www.dropbox.com/' === url) {
 						destroyAuthorizeUI();
 						return;
-					} else if(e.url.indexOf('#error=access_denied') != -1) {
+					} else if (url.indexOf('#error=access_denied') != -1) {
 						destroyAuthorizeUI();
 						return;
 					}
@@ -210,7 +219,7 @@ exports.createClient = function(config) {
 				// unloads the UI used to have the user authorize the application
 				var destroyAuthorizeUI = function() {
 					// if the window doesn't exist, exit
-					if(window == null){
+					/*if (window == null) {
 						return;
 					}
 					// remove the UI
@@ -222,22 +231,41 @@ exports.createClient = function(config) {
 						window = null;
 					} catch (ex) {
 						Ti.API.debug('Cannot destroy the authorize UI. Ignoring.');
-					}
+					}*/
 				};
 				
-				Ti.Platform.openURL('https://www.dropbox.com/1/oauth/authorize?oauth_token=' + reply.oauth_token + '&oauth_callback=fb614174031953325://settings?auth=success');
-				authorizeUICallback();
-				var wv = Ti.UI.createWebView({
-					url : 'https://www.dropbox.com/1/oauth/authorize?oauth_token=' + reply.oauth_token
-				});
+				// Jump to Dropbox web to do authorization
+				Ti.Platform.openURL('https://www.dropbox.com/1/oauth/authorize?oauth_token=' + reply.oauth_token + '&oauth_callback=fb614174031953325://settings');
+				//authorizeUICallback();
 				
+				Ti.App.addEventListener('resumed',authorizeUICallback);
+				
+				/*var wv = Ti.UI.createWebView({
+					url : 'https://www.dropbox.com/1/oauth/authorize?oauth_token=' + reply.oauth_token + '&oauth_callback=http://www.clearlyinnovative.com/oAuth.html'
+				});
+
 				wv.addEventListener('load', authorizeUICallback);
+
 				var window = Ti.UI.createWindow({
-					backgroundColor : 'transparent'
+					backgroundColor : 'transparent',
+					modal : true,
+					navBarHidden : false
+				});
+
+				var navWin = Ti.UI.iOS.createNavigationWindow({
+					tintColor : COLOR_PURPLE,
+					backgroundColor : 'white',
+					modal : true,
+					window : window
 				});
 
 				window.add(wv);
-				window.open();
+				//window.open();
+				navWin.open({
+					modal : true,
+					modalTransitionStyle : Ti.UI.iPhone.MODAL_TRANSITION_STYLE_COVER_VERTICAL,
+					modalStyle : Ti.UI.iPhone.MODAL_PRESENTATION_CURRENT_CONTEXT
+				});*/
 			});
 		},
 
@@ -262,7 +290,7 @@ exports.createClient = function(config) {
 		},
 		build_authorize_url : function(oauth_token, oauth_callback) {
 			var url = "https://www.dropbox.com/1/oauth/authorize?oauth_token=" + oauth_token;
-			if(oauth_callback) {
+			if (oauth_callback) {
 				url = url + "&oauth_callback=" + oauth_callback;
 			}
 			return url;
@@ -339,8 +367,8 @@ exports.createClient = function(config) {
 
 			var params = sign(options);
 			var urlX = "";
-			for(var a in params) {
-				if(a){
+			for (var a in params) {
+				if (a) {
 					urlX += Titanium.Network.encodeURIComponent(a) + '=' + Titanium.Network.encodeURIComponent(params[a]) + '&';
 				}
 			}
@@ -363,8 +391,8 @@ exports.createClient = function(config) {
 
 			var params = sign(options);
 			var urlX = "";
-			for(var a in params) {
-				if(a){
+			for (var a in params) {
+				if (a) {
 					urlX += Titanium.Network.encodeURIComponent(a) + '=' + Titanium.Network.encodeURIComponent(params[a]) + '&';
 				}
 			}
@@ -387,8 +415,8 @@ exports.createClient = function(config) {
 
 			var params = sign(options);
 			var urlX = "";
-			for(var a in params) {
-				if(a){
+			for (var a in params) {
+				if (a) {
 					urlX += Titanium.Network.encodeURIComponent(a) + '=' + Titanium.Network.encodeURIComponent(params[a]) + '&';
 				}
 			}
@@ -412,8 +440,8 @@ exports.createClient = function(config) {
 
 			var params = sign(options);
 			var urlX = "";
-			for(var a in params) {
-				if(a){
+			for (var a in params) {
+				if (a) {
 					urlX += Titanium.Network.encodeURIComponent(a) + '=' + Titanium.Network.encodeURIComponent(params[a]) + '&';
 				}
 			}
@@ -512,8 +540,8 @@ exports.createClient = function(config) {
 
 			var params = sign(options);
 			var urlX = "";
-			for(var a in params) {
-				if(a){
+			for (var a in params) {
+				if (a) {
 					urlX += Titanium.Network.encodeURIComponent(a) + '=' + Titanium.Network.encodeURIComponent(params[a]) + '&';
 				}
 			}
@@ -537,10 +565,9 @@ exports.createClient = function(config) {
 			var params = sign(options);
 
 			params["root"] = params.root || root;
-			if( !from_copy_ref ) {
+			if (!from_copy_ref) {
 				params["from_path"] = from_path;
-			}
-			else {
+			} else {
 				params["from_copy_ref"] = from_copy_ref;
 			}
 			params["to_path"] = to_path;
@@ -653,8 +680,8 @@ exports.createClient = function(config) {
 			var params = sign(options);
 
 			var urlX = "";
-			for(var a in params) {
-				if(a){
+			for (var a in params) {
+				if (a) {
 					urlX += Titanium.Network.encodeURIComponent(a) + '=' + Titanium.Network.encodeURIComponent(params[a]) + '&';
 				}
 			}
@@ -669,4 +696,4 @@ exports.createClient = function(config) {
 			});
 		}
 	};
-};
+}; 
