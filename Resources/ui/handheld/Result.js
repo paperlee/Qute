@@ -25,7 +25,7 @@ var fadeIn = Ti.UI.createAnimation({
 	duration : 500
 });
 
-var FACEBOOK_APP_ID = 614174031953325;
+var FACEBOOK_APP_ID;
 
 var is_init_typing = true;
 
@@ -38,6 +38,7 @@ var ToastWithImage = require('ui/handheld/iToastWithImage');
 var CommentRow = require('ui/handheld/CommentRow');
 var Loading = require('ui/handheld/iLoading');
 var WhyWindow = require('ui/handheld/WhyWindow');
+var Keys = require('keys');
 
 var sayIsFocused = false;
 
@@ -61,7 +62,11 @@ function isIOS7Plus() {
 }
 
 function Result(qrData, qrRow) {
-
+	
+	var keys = new Keys();
+	
+	FACEBOOK_APP_ID = keys.facebook_appid;
+	
 	//check if ios7+
 	ios7 = isIOS7Plus();
 

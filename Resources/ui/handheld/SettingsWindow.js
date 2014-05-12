@@ -107,7 +107,7 @@ function SettingsWindow() {
 		systemButton : Ti.UI.iPhone.SystemButton.FLEXIBLE_SPACE
 	});
 
-	var langToolbar = Ti.UI.createToolbar({
+	var langToolbar = Ti.UI.iOS.createToolbar({
 		height : 40,
 		width : '100%',
 		left : 0,
