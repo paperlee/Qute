@@ -11,6 +11,7 @@ var langsName = ['English', '繁體中文', '简体中文'];
 
 var locale = require('com.shareourideas.locale');
 var dropbox = require('dropbox');
+var cookiejar = require('com.kosso.cookiejar');
 
 var URL_QUTE = 'https://www.facebook.com/pages/Qute/368537286624382';
 
@@ -40,11 +41,34 @@ function SettingsWindow() {
 		modal : true,
 		window : main
 	});
-
-	var settingsSection = Ti.UI.createTableViewSection({
-
+	
+	var powerByDropboxView = Ti.UI.createView({
+		width:Ti.UI.FILL,
+		height:30,
+		layout:'horizontal'
 	});
-
+	
+	var powerByText = Ti.UI.createLabel({
+		font:{
+			fontSize:12
+		},
+		color:'#999999',
+		text:L('settings_power_by'),
+		left:100
+	});
+	
+	var dropboxImage = Ti.UI.createImageView({
+		image:'images/icon_dropbox.png',
+		left:2
+	});
+	
+	powerByDropboxView.add(powerByText);
+	powerByDropboxView.add(dropboxImage);
+	
+	var settingsSection = Ti.UI.createTableViewSection({
+		footerView:powerByDropboxView
+	});
+	
 	var languageRow = Ti.UI.createTableViewRow({
 		height : 44
 	});
@@ -266,6 +290,18 @@ function SettingsWindow() {
 		});
 	};
 
+	var logout = function() {
+		// Not really logout. Or it will repeatly log in
+		cookiejar.clearWebViewCookies('.dropbox.com');
+		console.log('Before logout: '+Ti.App.Properties.getString('DROPBOX_TOKENS'));
+		Ti.App.Properties.setString('DROPBOX_TOKENS', null);
+		Ti.App.Properties.setBool('syncing',false);
+	};
+	
+	var doSync = function() {
+
+	};
+
 	Ti.App.addEventListener('dropbox_error', function(e) {
 		client.login(function(options) {
 			//console.log('Great! login done!'+options.toString());
@@ -279,15 +315,20 @@ function SettingsWindow() {
 			console.log('Start connecting to Dropbox');
 			if (client.isAuthorized()) {
 				console.log('Already logged in');
-				getDelta();
+				//getDelta();
 			} else {
 				console.log('Go logging in');
 				client.login(function(options) {
+					Ti.App.Properties.setBool('syncing',true);
 					console.log('Great! login done!' + options.toString());
-					getDelta();
+					console.log('syncing: '+Ti.App.Properties.getBool('syncing'));
+					//getDelta();
 
 				});
 			}
+		} else {
+			// do logout
+			logout();
 		}
 	});
 
@@ -418,7 +459,7 @@ function SettingsWindow() {
 	var claimView = Ti.UI.createView({
 		width : 'auto',
 		height : 60,
-		bottom : 20,
+		bottom : 10,
 		layout : 'vertical'
 	});
 

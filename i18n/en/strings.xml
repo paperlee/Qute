@@ -95,7 +95,9 @@
 	<string name="navibar_button_title_save">Save</string>
 	<string name="navibar_button_title_cancel">Cancel</string>
 	<string name="settings_title_language">Language</string>
+	<string name="settings_title_sync">Sync</string>
+	<string name="settings_power_by">Powered by</string>
 	
 	<!-- Toast -->
-	<string name="toast placeholder">Well...What\'s the message?</string>
+	<string name="toast_placeholder">Well...What\'s the message?</string>
 </resources>

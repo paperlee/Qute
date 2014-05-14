@@ -95,7 +95,9 @@
 	<string name="navibar_button_title_save">储存</string>
 	<string name="navibar_button_title_cancel">取消</string>
 	<string name="settings_title_language">语言</string>
+	<string name="settings_title_sync">同步</string>
+	<string name="settings_power_by">Powered by</string>
 
 	<!-- Toast -->
-	<string name="toast placeholder">嗯...你是想干嘛？</string>
+	<string name="toast_placeholder">嗯...你是想干嘛？</string>
 </resources>
