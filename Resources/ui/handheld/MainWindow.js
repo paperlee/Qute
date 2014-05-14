@@ -219,7 +219,10 @@ function MainWindow() {
 					}
 
 					//Save file to local storage
-					var filename_part = "Qute/" + db.lastInsertRowId + ".png";
+					// TODO:careful! too long the file name!
+					var img_file_name = (new Date()).getTime()+db.lastInsertRowId;
+					console.log('new image name is '+img_file_name);
+					var filename_part = "Qute/" + img_file_name + ".png";
 					//var filename_part = "Qute/" + getUniqueFileName() + ".png";
 					var filename = Ti.Filesystem.applicationDataDirectory + filename_part;
 					var file = Ti.Filesystem.getFile(filename);
