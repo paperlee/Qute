@@ -25,7 +25,7 @@ var keys = new Keys();
 var client = dropbox.createClient({
 	app_key:keys.dropbox_appkey,
 	app_secret:keys.dropbox_appskey,
-	root:'dropbox'
+	root:'sandbox'
 });
 
 // This is a single context application with mutliple windows in a stack

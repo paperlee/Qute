@@ -220,7 +220,7 @@ function MainWindow() {
 
 					//Save file to local storage
 					// TODO:careful! too long the file name!
-					var img_file_name = (new Date()).getTime()+db.lastInsertRowId;
+					var img_file_name = (new Date()).getTime()+''+db.lastInsertRowId;
 					console.log('new image name is '+img_file_name);
 					var filename_part = "Qute/" + img_file_name + ".png";
 					//var filename_part = "Qute/" + getUniqueFileName() + ".png";

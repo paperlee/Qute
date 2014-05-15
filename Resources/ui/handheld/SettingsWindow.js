@@ -15,6 +15,32 @@ var cookiejar = require('com.kosso.cookiejar');
 
 var URL_QUTE = 'https://www.facebook.com/pages/Qute/368537286624382';
 
+function db2array(rows) {
+	var returnArray = [];
+
+	var fieldCount;
+	//fieldCount is property in Android
+	if (Ti.Platform.name === 'android') {
+		fieldCount = rows.fieldCount;
+	} else {
+		fieldCount = rows.fieldCount();
+	}
+
+	var obj = {};
+
+	while (rows.isValidRow()) {
+		obj = new Object();
+		for (var i = 0; i < fieldCount; i++) {
+			obj[rows.fieldName(i)] = rows.field(i);
+		}
+		console.log(obj);
+		returnArray.push(obj);
+		rows.next();
+	}
+	console.log(returnArray);
+	return returnArray;
+}
+
 function SettingsWindow() {
 
 	var btnClose = Ti.UI.createButton({
@@ -41,34 +67,34 @@ function SettingsWindow() {
 		modal : true,
 		window : main
 	});
-	
+
 	var powerByDropboxView = Ti.UI.createView({
-		width:Ti.UI.FILL,
-		height:30,
-		layout:'horizontal'
+		width : Ti.UI.FILL,
+		height : 30,
+		layout : 'horizontal'
 	});
-	
+
 	var powerByText = Ti.UI.createLabel({
-		font:{
-			fontSize:12
+		font : {
+			fontSize : 12
 		},
-		color:'#999999',
-		text:L('settings_power_by'),
-		left:100
+		color : '#999999',
+		text : L('settings_power_by'),
+		left : 100
 	});
-	
+
 	var dropboxImage = Ti.UI.createImageView({
-		image:'images/icon_dropbox.png',
-		left:2
+		image : 'images/icon_dropbox.png',
+		left : 2
 	});
-	
+
 	powerByDropboxView.add(powerByText);
 	powerByDropboxView.add(dropboxImage);
-	
+
 	var settingsSection = Ti.UI.createTableViewSection({
-		footerView:powerByDropboxView
+		footerView : powerByDropboxView
 	});
-	
+
 	var languageRow = Ti.UI.createTableViewRow({
 		height : 44
 	});
@@ -293,22 +319,102 @@ function SettingsWindow() {
 	var logout = function() {
 		// Not really logout. Or it will repeatly log in
 		cookiejar.clearWebViewCookies('.dropbox.com');
-		console.log('Before logout: '+Ti.App.Properties.getString('DROPBOX_TOKENS'));
+		console.log('Before logout: ' + Ti.App.Properties.getString('DROPBOX_TOKENS'));
 		Ti.App.Properties.setString('DROPBOX_TOKENS', null);
-		Ti.App.Properties.setBool('syncing',false);
+		Ti.App.Properties.setBool('syncing', false);
 	};
-	
+
 	var doSync = function() {
 
+		/*try {
+			client.mkdir('Content',{},function(stat,reply){
+		
+				console.log('stat:'+stat);
+				console.log('reply:'+reply);
+			});
+			
+			client.mkdir('Photo',{},function(stat,reply){
+		
+				console.log('stat:'+stat);
+				console.log('reply:'+reply);
+			});
+		}
+		catch(err){
+			console.log('create folder error:'+err);
+		}*/
+		
+		client.search('.','Content',{},function(stat,reply){
+			//console.log('search:'+stat);
+			//console.log('reply:'+reply.length);
+			if (reply.length=0){
+				// Create Content folder
+				client.mkdir('Content',{},function(stat,reply){
+					// did create Content folder
+					console.log('Content folder successfully');
+				});
+			}
+		});
+		
+		client.search('.','Photo',{},function(stat,reply){
+			//console.log('search:'+stat);
+			//console.log('reply:'+reply.length);
+			if (reply.length=0){
+				// Create Content folder
+				client.mkdir('Photo',{},function(stat,reply){
+					// did create Content folder
+					console.log('Content folder successfully');
+				});
+			}
+		});
+
+		var db = Ti.Database.open('qute');
+		var rows = db.execute('SELECT * FROM history ORDER BY id DESC');
+
+		var fieldCount;
+		//fieldCount is property in Android
+		if (Ti.Platform.name === 'android') {
+			fieldCount = rows.fieldCount;
+		} else {
+			fieldCount = rows.fieldCount();
+		}
+
+		while (rows.isValidRow()) {
+			var obj = {};
+			for (var i = 0; i < fieldCount; i++) {
+				obj[rows.fieldName(i)] = rows.field(i);
+			}
+
+			var photo_name = obj['img'].split('/')[1];
+			var unique_name = photo_name.split('.png')[0];
+
+			client.put('Content/' + unique_name + '.json', JSON.stringify(obj), {
+				overwrite : true
+			}, function(stat, reply) {
+				Ti.API.info('stat:' + stat);
+				Ti.API.info('reply:' + JSON.stringify(reply));
+			});
+
+			var photo_file = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory + obj['img']);
+			client.put('Photo/' + photo_name, photo_file.read(), {
+				overwrite : true
+			}, function(stat, reply) {
+				Ti.API.info('stat:' + stat);
+				Ti.API.info('reply:' + JSON.stringify(reply));
+			});
+
+			rows.next();
+		}
+		db.close();
+
 	};
 
-	Ti.App.addEventListener('dropbox_error', function(e) {
-		client.login(function(options) {
-			//console.log('Great! login done!'+options.toString());
-			getDelta();
+	/*Ti.App.addEventListener('dropbox_error', function(e) {
+	 client.login(function(options) {
+	 //console.log('Great! login done!'+options.toString());
+	 getDelta();
 
-		});
-	});
+	 });
+	 });*/
 
 	syncSwitch.addEventListener('change', function(e) {
 		if (e.value) {
@@ -316,14 +422,15 @@ function SettingsWindow() {
 			if (client.isAuthorized()) {
 				console.log('Already logged in');
 				//getDelta();
+				doSync();
 			} else {
 				console.log('Go logging in');
 				client.login(function(options) {
-					Ti.App.Properties.setBool('syncing',true);
+					Ti.App.Properties.setBool('syncing', true);
 					console.log('Great! login done!' + options.toString());
-					console.log('syncing: '+Ti.App.Properties.getBool('syncing'));
+					console.log('syncing: ' + Ti.App.Properties.getBool('syncing'));
 					//getDelta();
-
+					doSync();
 				});
 			}
 		} else {

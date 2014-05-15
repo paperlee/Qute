@@ -95,6 +95,11 @@ exports.createClient = function(config) {
 		var token, that = this;
 
 		var raw = Ti.App.Properties.getString('DROPBOX_TOKENS');
+		if (raw == null){
+			// DROPBOX_TOKENS not available. Update the local token
+			that.accessToken = null;
+			that.accessTokenSecret = null;
+		}
 		if (!raw) {
 			console.log('THERE IS NO DROPBOX_TOKENS');
 			// Update local token properties to null. Logout?
