@@ -358,10 +358,12 @@ function SettingsWindow() {
 			}, function(stat, reply) {
 				Ti.API.info('stat:' + stat);
 				Ti.API.info('reply:' + JSON.stringify(reply));
-				var datetime = new Date().toISOString();
-				db.execute('UPDATE history SET last_sync=?,sync_address=? WHERE id=?', datetime, unique_name, obj['id']);
 			});
-
+			
+			// Update last_sync in local data
+			var datetime = new Date().toISOString();
+			db.execute('UPDATE history SET last_sync=?,sync_address=? WHERE id=?', datetime, unique_name, obj['id']);
+			
 			rows.next();
 		}
 		db.close();
@@ -412,13 +414,15 @@ function SettingsWindow() {
 				// 2. Get local datas
 				var datas = getAllData();
 				console.log('Local has '+datas.length+' datas');
+				// 3. Check if file exist in local? EXIST:continue NO:get
+				
 			}
 		});
-		// TODO: 2.1 Check if file exist in local? EXIST:continue NO:get
+		// TODO: 3. Check if file exist in local? EXIST:continue NO:get
 
-		// TODO: 3. Check if dropbox_file_date >(newer) local_file_date? YES:get EQUAL:skip NO:upload(content)
+		// TODO: 4. Check if dropbox_file_date >(newer) local_file_date? YES:get EQUAL:skip NO:upload(content)
 
-		// TODO: 4. The rest local data: Upload (photo+content)
+		// TODO: 5. The rest local data: Upload (photo+content)
 
 	};
 
