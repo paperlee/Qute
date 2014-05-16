@@ -324,49 +324,7 @@ function SettingsWindow() {
 		Ti.App.Properties.setBool('syncing', false);
 	};
 
-	var doSync = function() {
-
-		/*try {
-			client.mkdir('Content',{},function(stat,reply){
-		
-				console.log('stat:'+stat);
-				console.log('reply:'+reply);
-			});
-			
-			client.mkdir('Photo',{},function(stat,reply){
-		
-				console.log('stat:'+stat);
-				console.log('reply:'+reply);
-			});
-		}
-		catch(err){
-			console.log('create folder error:'+err);
-		}*/
-		
-		client.search('.','Content',{},function(stat,reply){
-			//console.log('search:'+stat);
-			//console.log('reply:'+reply.length);
-			if (reply.length=0){
-				// Create Content folder
-				client.mkdir('Content',{},function(stat,reply){
-					// did create Content folder
-					console.log('Content folder successfully');
-				});
-			}
-		});
-		
-		client.search('.','Photo',{},function(stat,reply){
-			//console.log('search:'+stat);
-			//console.log('reply:'+reply.length);
-			if (reply.length=0){
-				// Create Content folder
-				client.mkdir('Photo',{},function(stat,reply){
-					// did create Content folder
-					console.log('Content folder successfully');
-				});
-			}
-		});
-
+	var pureExport = function() {
 		var db = Ti.Database.open('qute');
 		var rows = db.execute('SELECT * FROM history ORDER BY id DESC');
 
@@ -400,11 +358,79 @@ function SettingsWindow() {
 			}, function(stat, reply) {
 				Ti.API.info('stat:' + stat);
 				Ti.API.info('reply:' + JSON.stringify(reply));
+				var datetime = new Date().toISOString();
+				db.execute('UPDATE history SET last_sync=?,sync_address=? WHERE id=?', datetime, unique_name, obj['id']);
 			});
 
 			rows.next();
 		}
 		db.close();
+	};
+
+	var getAllData = function() {
+		var db = Ti.Database.open('qute');
+		var rows = db.execute('SELECT * FROM history ORDER BY id DESC');
+
+		var fieldCount;
+		//fieldCount is property in Android
+		if (Ti.Platform.name === 'android') {
+			fieldCount = rows.fieldCount;
+		} else {
+			fieldCount = rows.fieldCount();
+		}
+		
+		var datas = [];
+
+		while (rows.isValidRow()) {
+			var obj = {};
+			for (var i = 0; i < fieldCount; i++) {
+				obj[rows.fieldName(i)] = rows.field(i);
+			}
+
+			datas.push(obj);
+
+			rows.next();
+		}
+		db.close();
+		return datas;
+	};
+
+	var importOrExport = function() {
+		console.log('method: importOrExport');
+		// 1. Get files metadata from dropbox
+		var dropbox_files = [];
+		client.metadata('Content', {
+			list : true,
+			include_deleted : false
+		}, function(stat, reply) {
+			dropbox_files = reply['contents'];
+			if (dropbox_files.length == 0) {
+				pureExport();
+			} else {
+				console.log('Go importOrExport one by one!\n' + JSON.stringify(reply));
+				console.log('Cloud has ' + dropbox_files.length + ' files');
+				// 2. Get local datas
+				var datas = getAllData();
+				console.log('Local has '+datas.length+' datas');
+			}
+		});
+		// TODO: 2.1 Check if file exist in local? EXIST:continue NO:get
+
+		// TODO: 3. Check if dropbox_file_date >(newer) local_file_date? YES:get EQUAL:skip NO:upload(content)
+
+		// TODO: 4. The rest local data: Upload (photo+content)
+
+	};
+
+	var doSync = function() {
+
+		client.search('.', 'Content', {}, function(stat, reply) {
+			if (reply.length > 0) {
+				importOrExport();
+			} else {
+				pureExport();
+			}
+		});
 
 	};
 
