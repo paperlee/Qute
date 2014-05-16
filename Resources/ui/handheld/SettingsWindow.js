@@ -382,7 +382,9 @@ function SettingsWindow() {
 		}
 		
 		var datas = [];
-
+		// keys saves all image file name to easily search in datas
+		var data_keys = [];
+		
 		while (rows.isValidRow()) {
 			var obj = {};
 			for (var i = 0; i < fieldCount; i++) {
@@ -390,11 +392,14 @@ function SettingsWindow() {
 			}
 
 			datas.push(obj);
-
+			var img_file_name = obj['img'].split('/')[1];
+			conosle.log('img named: '+img_file_name);
+			data_keys.push(img_file_name.split('.')[0]);
+			
 			rows.next();
 		}
 		db.close();
-		return datas;
+		return [datas,data_keys];
 	};
 
 	var importOrExport = function() {
@@ -412,17 +417,26 @@ function SettingsWindow() {
 				console.log('Go importOrExport one by one!\n' + JSON.stringify(reply));
 				console.log('Cloud has ' + dropbox_files.length + ' files');
 				// 2. Get local datas
-				var datas = getAllData();
-				console.log('Local has '+datas.length+' datas');
+				var datasAndKeys = getAllData();
+				var datas = datasAndKeys[0];
+				var data_keys = datasAndKeys[1];
+				console.log('Local has '+datas.length+' datas. And '+data_keys.length+' keys');
 				// 3. Check if file exist in local? EXIST:continue NO:get
-				
+				dropbox_files.forEach(function(element,key,array){
+					var id2 = element['path'].split('Content/')[1];
+					var id = id2.split('.')[0];
+					
+					var at = data_keys.indexOf(id);
+					console.log('Path: '+element['path']+':: ID: '+id+':: at:'+at);
+					//TODO: add real action to do import or export
+				});
 			}
 		});
-		// TODO: 3. Check if file exist in local? EXIST:continue NO:get
+		// TODO: 4. Check if file exist in local? EXIST:continue NO:get
 
-		// TODO: 4. Check if dropbox_file_date >(newer) local_file_date? YES:get EQUAL:skip NO:upload(content)
+		// TODO: 5. Check if dropbox_file_date >(newer) local_file_date? YES:get EQUAL:skip NO:upload(content)
 
-		// TODO: 5. The rest local data: Upload (photo+content)
+		// TODO: 6. The rest local data: Upload (photo+content)
 
 	};
 
