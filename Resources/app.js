@@ -15,7 +15,7 @@ if (Ti.version < 1.8 ) {
 	alert('Sorry - this application template requires Titanium Mobile SDK 1.8 or later');
 }
 
-var DB_VERSION = 0.3;
+var DB_VERSION = 0.4;
 
 var locale = require('com.shareourideas.locale');
 var dropbox = require('dropbox');
@@ -85,7 +85,7 @@ var client = dropbox.createClient({
 	
 	//init db
 	var db = Ti.Database.open('qute');
-	db.execute('CREATE TABLE IF NOT EXISTS history (id INTEGER PRIMARY KEY, title, date, qrtype INTEGER, content, raw, img, loved INTEGER, post_id, qute_link, last_update, last_sync, from_me INTEGER DEFAULT 0)');
+	db.execute('CREATE TABLE IF NOT EXISTS history (id INTEGER PRIMARY KEY, title, date, qrtype INTEGER, content, raw, img, loved INTEGER, post_id, qute_link, last_update, last_sync, from_me INTEGER DEFAULT 0, sync_address TEXT DEFAULT no)');
 	//db.execute('ALTER TABLE history ADD COLUMN from_me INTEGER DEFAULT 0');
 	db.execute('CREATE TABLE IF NOT EXISTS _system (version)');
 	
@@ -104,11 +104,13 @@ var client = dropbox.createClient({
 		db = Ti.Database.open('qute');
 		db.execute('BEGIN TRANSACTION');
 		db.execute('ALTER TABLE history RENAME TO temp_history');
-		db.execute('CREATE TABLE history(id INTEGER PRIMARY KEY, title, date, qrtype INTEGER, content, raw, img, loved INTEGER, post_id, qute_link, last_update, last_sync, from_me INTEGER DEFAULT 0)');
+		db.execute('CREATE TABLE history(id INTEGER PRIMARY KEY, title, date, qrtype INTEGER, content, raw, img, loved INTEGER, post_id, qute_link, last_update, last_sync, from_me INTEGER DEFAULT 0, sync_address TEXT DEFAULT no)');
 		
-		if (current_db_version==0.2){
+		if (current_db_version == 0.2){
 			//have to migrate id as well to prevent bad image naming in future release
 			db.execute('INSERT INTO history (id, title, date, qrtype, content, raw, img, loved, post_id, last_update, last_sync, from_me) SELECT id, title, date, qrtype, content, raw, img, loved, post_id, last_update, last_sync, from_me FROM temp_history');
+		} else if (current_db_version == 0.3){
+			db.execute('INSERT INTO history (id, title, date, qrtype, content, raw, img, loved, post_id, qute_link, last_update, last_sync, from_me) SELECT id, title, date, qrtype, content, raw, img, loved, post_id, qute_link, last_update, last_sync, from_me FROM temp_history');
 		}
 		
 		db.execute('DROP TABLE temp_history');
