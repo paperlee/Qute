@@ -1459,7 +1459,8 @@ function Result(qrData, qrRow) {
 				//alert(L('The QR code is now off the world.'));
 				qrData['post_id'] = -1;
 				var db = Ti.Database.open('qute');
-				db.execute('UPDATE history SET post_id=? WHERE id=?', -1, qrData['id']);
+				var datetime = new Date().toISOString();
+				db.execute('UPDATE history SET post_id=?,last_update=? WHERE id=?', -1, datetime, qrData['id']);
 				db.close();
 
 				//clean comments
@@ -1601,7 +1602,8 @@ function Result(qrData, qrRow) {
 
 						var db = Ti.Database.open('qute');
 						//Update post_id and from_me?
-						db.execute('UPDATE history SET post_id=? WHERE id=?', post_id, qrData['id']);
+						var datetime = new Date().toISOString();
+						db.execute('UPDATE history SET post_id=?,last_update=? WHERE id=?', post_id, datetime, qrData['id']);
 						db.close();
 
 						qrData['post_id'] = 0;
@@ -1655,7 +1657,8 @@ function Result(qrData, qrRow) {
 								post_id = result.id;
 								var db = Ti.Database.open('qute');
 								//update post_id and from_me?
-								db.execute('UPDATE history SET post_id=?,from_me=? WHERE id=?', post_id, 1, qrData['id']);
+								var datetime = new Date().toISOString();
+								db.execute('UPDATE history SET post_id=?,from_me=?,last_update=? WHERE id=?', post_id, 1, datetime, qrData['id']);
 								db.close();
 
 								//assign back the local data
@@ -1716,7 +1719,8 @@ function Result(qrData, qrRow) {
 												qrData['title'] = nameResult['name'];
 
 												var db = Ti.Database.open('qute');
-												db.execute('UPDATE history SET title=? WHERE id=?', qrData['title'], qrData['id']);
+												var datetime = new Date().toISOString();
+												db.execute('UPDATE history SET title=?,last_update=? WHERE id=?', qrData['title'], datetime, qrData['id']);
 												db.close();
 
 												//Assign in UI title field
@@ -1785,7 +1789,8 @@ function Result(qrData, qrRow) {
 										post_id = result.id;
 										var db = Ti.Database.open('qute');
 										//Update post_id and from_me?
-										db.execute('UPDATE history SET post_id=?,from_me=? WHERE id=?', post_id, 1, qrData['id']);
+										var datetime = new Date().toISOString();
+										db.execute('UPDATE history SET post_id=?,from_me=?,last_update=? WHERE id=?', post_id, 1, datetime, qrData['id']);
 										db.close();
 
 										//assign back the local data
@@ -1855,7 +1860,8 @@ function Result(qrData, qrRow) {
 								Ti.API.info('User canceled the creating action');
 								post_id = -1;
 								var db = Ti.Database.open('qute');
-								db.execute('UPDATE history SET post_id=? WHERE id=?', post_id, qrData['id']);
+								var datetime = new Date().toISOString();
+								db.execute('UPDATE history SET post_id=?,last_update=? WHERE id=?', post_id, datetime, qrData['id']);
 								db.close();
 
 								//assign back the local data
@@ -1949,7 +1955,8 @@ function Result(qrData, qrRow) {
 								//shall update from_me status
 								qrData['from_me'] = from_me;
 								var db = Ti.Database.open('qute');
-								db.execute('UPDATE history SET title=?, post_id=?, from_me=? WHERE id=?', qrData['title'], qrData['post_id'], qrData['from_me'], qrData['id']);
+								var datetime = new Date().toISOString();
+								db.execute('UPDATE history SET title=?, post_id=?, from_me=?, last_update=? WHERE id=?', qrData['title'], qrData['post_id'], qrData['from_me'], datetime, qrData['id']);
 								db.close();
 
 								//Update dialog qute link
