@@ -359,11 +359,12 @@ function SettingsWindow() {
 				Ti.API.info('stat:' + stat);
 				Ti.API.info('reply:' + JSON.stringify(reply));
 			});
-			
+
 			// Update last_sync in local data
 			var datetime = new Date().toISOString();
 			db.execute('UPDATE history SET last_sync=?,sync_address=? WHERE id=?', datetime, unique_name, obj['id']);
 			
+			//TODO: make dropbox file also include sync_address update
 			rows.next();
 		}
 		db.close();
@@ -380,11 +381,11 @@ function SettingsWindow() {
 		} else {
 			fieldCount = rows.fieldCount();
 		}
-		
+
 		var datas = [];
 		// keys saves all image file name to easily search in datas
 		var data_keys = [];
-		
+
 		while (rows.isValidRow()) {
 			var obj = {};
 			for (var i = 0; i < fieldCount; i++) {
@@ -393,13 +394,13 @@ function SettingsWindow() {
 
 			datas.push(obj);
 			var img_file_name = obj['img'].split('/')[1];
-			conosle.log('img named: '+img_file_name);
+			conosle.log('img named: ' + img_file_name);
 			data_keys.push(img_file_name.split('.')[0]);
-			
+
 			rows.next();
 		}
 		db.close();
-		return [datas,data_keys];
+		return [datas, data_keys];
 	};
 
 	var importOrExport = function() {
@@ -420,23 +421,63 @@ function SettingsWindow() {
 				var datasAndKeys = getAllData();
 				var datas = datasAndKeys[0];
 				var data_keys = datasAndKeys[1];
-				console.log('Local has '+datas.length+' datas. And '+data_keys.length+' keys');
+				console.log('Local has ' + datas.length + ' datas. And ' + data_keys.length + ' keys');
 				// 3. Check if file exist in local? EXIST:continue NO:get
-				dropbox_files.forEach(function(element,key,array){
+				dropbox_files.forEach(function(element, key, array) {
 					var id2 = element['path'].split('Content/')[1];
 					var id = id2.split('.')[0];
-					
+
 					var at = data_keys.indexOf(id);
-					console.log('Path: '+element['path']+':: ID: '+id+':: at:'+at);
+					console.log('Path: ' + element['path'] + ':: ID: ' + id + ':: at:' + at);
+					console.log(element['modified'] + ' = ' + (new Date(element['modified'])).getTime());
 					//TODO: add real action to do import or export
+					if (at < 0) {
+						// Not existed in local. Download it
+						client.get(element['path'], {}, function(stat, reply, metadata) {
+							console.log('metadata:'+metadata);
+							var content = JSON.parse(reply);
+							if (content.title) {
+								var db = Ti.Database.open('qute');
+								db.execute('INSERT INTO history (title, date, qrtype, content, raw, img, loved, post_id, qute_link, last_update, last_sync, from_me, sync_address) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', content.title, content.date, content.qrtype, content.content, content.raw, content.img, content.loved, content.post_id, content.qute_link, content.last_update, content.last_sync, content.from_me, content.sync_address);
+								db.close();
+								client.get(JSON.parse(metadata).path.replace('Content','Photo'), {}, function(stat, reply, metadata) {
+									var foldername = Ti.Filesystem.applicationDataDirectory + "Qute/";
+									var folder = Ti.Filesystem.getFile(foldername);
+									if (!folder.exists()) {
+										folder.createDirectory();
+									}
+
+									//Save file to local storage
+									var img_name = 'Qute/'+JSON.parse(metadata).path.splite('Photo/')[1]; // Get image file name
+									var filename = Ti.Filesystem.applicationDataDirectory + img_name;
+									var file = Ti.Filesystem.getFile(filename);
+									file.write(reply);
+								});
+							}
+							Ti.API.info('The file content: ' + JSON.parse(reply).title);
+						});
+					} else {
+						// File existed.
+						// 4. Check if dropbox_file_date >(newer) local_file_date? YES:get EQUAL:skip NO:upload(content)
+						// tolerance: Newer - 1 min. - Equal - 1 min. - Older
+						console.log(element['modified'] + ' = ' + (new Date(element['modified'])).getTime());
+						var dropbox_file_date = (new Date(element['modified'])).getTime();
+						var local_file_date = (new Date(datas[at].last_update)).getTime();
+						if (dropbox_file_date > local_file_date + 60000) {
+							// Dropbox newer than Local. Need to download file
+
+						} else if (dropbox_file_date < local_file_date - 60000) {
+							// Dropbox older than Local. Need to update dropbox data
+
+						} else {
+							// Equal. Nothing to do.
+						}
+					}
 				});
 			}
 		});
-		// TODO: 4. Check if file exist in local? EXIST:continue NO:get
 
-		// TODO: 5. Check if dropbox_file_date >(newer) local_file_date? YES:get EQUAL:skip NO:upload(content)
-
-		// TODO: 6. The rest local data: Upload (photo+content)
+		// TODO: 5. The rest local data: Upload (photo+content)
 
 	};
 
