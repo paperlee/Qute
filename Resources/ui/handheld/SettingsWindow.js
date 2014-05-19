@@ -440,7 +440,9 @@ function SettingsWindow() {
 								var db = Ti.Database.open('qute');
 								db.execute('INSERT INTO history (title, date, qrtype, content, raw, img, loved, post_id, qute_link, last_update, last_sync, from_me, sync_address) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', content.title, content.date, content.qrtype, content.content, content.raw, content.img, content.loved, content.post_id, content.qute_link, content.last_update, content.last_sync, content.from_me, content.sync_address);
 								db.close();
-								client.get(JSON.parse(metadata).path.replace('Content','Photo'), {}, function(stat, reply, metadata) {
+								var photo_path = JSON.parse(metadata).path.replace('Content','Photo');
+								photo_path.replace('.json','.png');
+								client.get(photo_path, {}, function(stat, reply, metadata) {
 									var foldername = Ti.Filesystem.applicationDataDirectory + "Qute/";
 									var folder = Ti.Filesystem.getFile(foldername);
 									if (!folder.exists()) {

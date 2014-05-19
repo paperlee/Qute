@@ -566,6 +566,8 @@ function Result(qrData, qrRow) {
 				timeout : 5000
 			});
 			
+			//TODO:shorten url may fail
+			
 			var url;
 			if (qrData['raw'].search(patt_http) < 0){
 				// need to add http at beginning
