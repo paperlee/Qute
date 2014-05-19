@@ -363,7 +363,7 @@ function SettingsWindow() {
 			// Update last_sync in local data
 			var datetime = new Date().toISOString();
 			db.execute('UPDATE history SET last_sync=?,sync_address=? WHERE id=?', datetime, unique_name, obj['id']);
-			
+
 			//TODO: make dropbox file also include sync_address update
 			rows.next();
 		}
@@ -434,29 +434,65 @@ function SettingsWindow() {
 					if (at < 0) {
 						// Not existed in local. Download it
 						client.get(element['path'], {}, function(stat, reply, metadata) {
-							console.log('metadata:'+metadata);
+							console.log('metadata:' + metadata);
 							var content = JSON.parse(reply);
 							if (content.title) {
 								var db = Ti.Database.open('qute');
 								db.execute('INSERT INTO history (title, date, qrtype, content, raw, img, loved, post_id, qute_link, last_update, last_sync, from_me, sync_address) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', content.title, content.date, content.qrtype, content.content, content.raw, content.img, content.loved, content.post_id, content.qute_link, content.last_update, content.last_sync, content.from_me, content.sync_address);
 								db.close();
-								var photo_path = JSON.parse(metadata).path.replace('Content','Photo');
-								photo_path.replace('.json','.png');
-								client.get(photo_path, {}, function(stat, reply, metadata) {
-									var foldername = Ti.Filesystem.applicationDataDirectory + "Qute/";
-									var folder = Ti.Filesystem.getFile(foldername);
-									if (!folder.exists()) {
-										folder.createDirectory();
-									}
-
+								var photo_path = JSON.parse(metadata).path.replace('Content', 'Photo');
+								photo_path = photo_path.replace('.json', '.png');
+								console.log('Photo path: ' + photo_path);
+								
+								// Make sure the Qute folder in local is created
+								var foldername = Ti.Filesystem.applicationDataDirectory + "Qute/";
+								var folder = Ti.Filesystem.getFile(foldername);
+								if (!folder.exists()) {
+									folder.createDirectory();
+								}
+								
+								// media can't be get by get() method
+								/*client.get(photo_path, {}, function(stat, reply, metadata) {
+									
 									//Save file to local storage
-									var img_name = 'Qute/'+JSON.parse(metadata).path.splite('Photo/')[1]; // Get image file name
+									var img_name = JSON.parse(metadata)['path'].replace('/Photo','Qute'); // Get image file name
 									var filename = Ti.Filesystem.applicationDataDirectory + img_name;
 									var file = Ti.Filesystem.getFile(filename);
 									file.write(reply);
+								});*/
+								
+								// Get photo's direct url and apply to imageView to store it
+								client.media(photo_path, {}, function(stat, reply) {
+									
+									var pp = photo_path;
+									//Save file to local storage
+									var img_name = pp.replace('/Photo', 'Qute');
+									var local_img_path = Ti.Filesystem.applicationDataDirectory + img_name;
+									var file = Ti.Filesystem.getFile(local_img_path);
+									
+									var xhr = Ti.Network.createHTTPClient({
+										onload: function(e){
+											file.write(this.responseData);
+										},
+										onerror: function(e){
+											console.log('Get image fail! '+e.error);
+										},
+										timeout:2*60000
+									});
+									
+									xhr.open('GET',reply['url']);
+									xhr.send();
+									
+
+									console.log('Img url is ' + reply['url']+"::full path: "+pp);
+									
+									
+									//temp_img.addEventListener('load',saveImage);
+									//file.write(temp_img.toImage());
+									
 								});
 							}
-							Ti.API.info('The file content: ' + JSON.parse(reply).title);
+							//Ti.API.info('The file content: ' + JSON.parse(reply).title);
 						});
 					} else {
 						// File existed.

@@ -144,11 +144,12 @@ exports.createClient = function(config) {
 			},
 			onload : function() {
 				if (client.status == 200) {
-					Ti.API.info(this.responseText);
+					//Ti.API.info(this.responseText);
 				} else {
-					Ti.API.info(this.responseText);
+					//Ti.API.info(this.responseText);
 				}
 				callback(null, this, this.responseText);
+				
 			},
 			onerror : function() {
 				Ti.API.error(' FAILED to send a request!');
