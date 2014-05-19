@@ -62,11 +62,11 @@ function isIOS7Plus() {
 }
 
 function Result(qrData, qrRow) {
-	
+
 	var keys = new Keys();
-	
+
 	FACEBOOK_APP_ID = keys.facebook_appid;
-	
+
 	//check if ios7+
 	ios7 = isIOS7Plus();
 
@@ -526,6 +526,47 @@ function Result(qrData, qrRow) {
 	if (qrData.qrtype === 0) {
 		//HTTP type
 		buttonOpenInSafari.enabled = true;
+		
+		console.log('title = raw?:'+(qrData['title'] == qrData['raw'])+'::'+qrData['title'] + '::'+qrData['raw']);
+		// Try to get website title
+		if (qrData['title'] == qrData['raw']) {
+			var httpRequest = Ti.Network.createHTTPClient({
+				onload : function(e) {
+					var matches = this.responseText.match(/<title>(.*?)<\/title>/gi);
+					if (matches != null) {
+						console.log('found title:'+matches[0]);
+						var title_string = matches[0].substring(7,matches[0].length-8);
+						// Assign back title to db
+						qrData['title'] = title_string;
+						var db = Ti.Database.open('qute');
+						var datetime = new Date().toISOString();
+						db.execute('UPDATE history SET title=?,last_update=? WHERE id=?', qrData['title'], datetime, qrData['id']);
+						db.close();
+
+						//Assign in UI title field
+						//resultText.text = qrData['title'];
+						resultText.visible = false;
+						readableTitle.text = qrData['title'];
+						readableTitle.visible = true;
+						rawLabel.text = qrData['raw'];
+						rawLabel.visible = true;
+
+						//call row to update self data
+						Ti.API.info('Staus shall updated!!');
+						qrRow.fireEvent('status_updated');
+					}
+				},
+				onerror : function(e) {
+					// handle error
+					console.log('Error happened while getting title: ' + e.error);
+				},
+				timeout : 5000
+			});
+			
+			httpRequest.open('GET',qrData['raw']);
+			httpRequest.send();
+		}
+
 	} else {
 		//disable, QR is other types
 		//TODO: other type of link, ex. contacts
@@ -876,21 +917,21 @@ function Result(qrData, qrRow) {
 			Ti.API.info('Now device is online');
 			Ti.API.info('FB? ' + fb.loggedIn);
 			/*fb.reauthorize([], 'me', function(e) {
-				if (e.sucess) {
-					Ti.App.Properties.setBool('loggedin', true);
-					Ti.API.info('NOW FB ONLINE? ' + fb.loggedIn);
+			 if (e.sucess) {
+			 Ti.App.Properties.setBool('loggedin', true);
+			 Ti.API.info('NOW FB ONLINE? ' + fb.loggedIn);
 
-				} else {
-					if (e.error) {
-						alert(e.error);
-					} else {
-						alert("Unknown result");
-					}
-				}
-			});*/
-			
+			 } else {
+			 if (e.error) {
+			 alert(e.error);
+			 } else {
+			 alert("Unknown result");
+			 }
+			 }
+			 });*/
+
 			checkThreadExist(false, true);
-			
+
 			Ti.Network.removeEventListener('change', network_change_listener);
 		}
 	};
@@ -901,34 +942,34 @@ function Result(qrData, qrRow) {
 		//				+'SELECT+post_id+FROM+stream+WHERE+source_id=368537286624382'
 		//				+'+AND+strpos(message,\''+encodeURIComponent(data.barcode)+'\')=0)' + '&access_token=' + fb.accessToken;
 		Ti.API.info('Checked loggedin status');
-		if (Ti.Network.online){
+		if (Ti.Network.online) {
 			checkThreadExist(false, true);
 		} else {
 			//Network is down
 			Ti.API.info('network is down');
 			//TODO: Don't know why below toast won't work. conflict Toast object?
-			self.addEventListener('postlayout',function(e){
+			self.addEventListener('postlayout', function(e) {
 				var networkDownToast = new Toast(L('network_down'));
 				networkDownToast.top = 50;
 				self.add(networkDownToast);
 			});
-			
+
 			//show reload button
 			buttonReload.visible = true;
 			switchOnFb.visible = false;
 			buttonSeeOnFb.visible = false;
-			
+
 			//Ti.Network.addEventListener('change',network_change_listener);
 		}
-		
+
 		//TODO:Bug: Log in FB -> log out(don't know reason). At the time the table won't be updated(locked in local db)
 	} else {
 		//offline
 		switchOnFb.enabled = false;
-		
+
 		Ti.API.info('loggedin status false');
 		/*if (!Ti.Network.online) {
-			Ti.Network.addEventListener('change', network_change_listener);
+		Ti.Network.addEventListener('change', network_change_listener);
 		}*/
 
 		//Attach tap twice hint
@@ -978,7 +1019,7 @@ function Result(qrData, qrRow) {
 			}]
 		}
 	});
-	
+
 	//TODO: Adjust the resultText width to leave space for buttonShare
 	var resultText = Ti.UI.createLabel({
 		width : 280,
@@ -1088,7 +1129,7 @@ function Result(qrData, qrRow) {
 
 	//blankSpaceTop.add(buttonShare);
 	blankSpaceBottom.add(buttonShare);
-	
+
 	buttonShare.addEventListener('click', function(e) {
 		var share_string;
 		var activitySettings = {};
@@ -1313,16 +1354,17 @@ function Result(qrData, qrRow) {
 		separatorStyle : Ti.UI.iPhone.TableViewCellSelectionStyle.NONE,
 		headerPullView : pullDownInstructionView
 	});
-	
+
 	//Scroll tableview to make sure the result text visible
-	var display_height = Ti.Platform.displayCaps.platformHeight-44-20; //The max height of one-page on device
+	var display_height = Ti.Platform.displayCaps.platformHeight - 44 - 20;
+	//The max height of one-page on device
 	//Ti.API.info('[1]pic height is '+picFrame.height);
 	//Ti.API.info('[1]display height is '+display_height);
-	if (picFrame.height >  display_height){
+	if (picFrame.height > display_height) {
 		//Ti.API.info('[2]Shall top to '+(picFrame.height-display_height));
-		table.scrollToTop(picFrame.height-display_height);
+		table.scrollToTop(picFrame.height - display_height);
 	}
-	
+
 	//wholeView.add(sayPanel);
 	wholeView.add(table);
 
@@ -1484,7 +1526,7 @@ function Result(qrData, qrRow) {
 				//work done! hide loading activity
 				loadingView.visible = false;
 				loadingIcon.hide();
-				
+
 				//reset switching to false
 				switchOnFb.switching = false;
 			} else {
@@ -1502,10 +1544,10 @@ function Result(qrData, qrRow) {
 				//work done! hide loading activity
 				loadingView.visible = false;
 				loadingIcon.hide();
-				
+
 				//reset switching to false
 				switchOnFb.switching = false;
-				
+
 				//enable comment feature
 				say.visible = true;
 				sendButton.visible = true;
@@ -1531,27 +1573,28 @@ function Result(qrData, qrRow) {
 		loadingIcon.show();
 
 		/*var loadingIcon = Ti.UI.createActivityIndicator({
-		 style : Ti.UI.iPhone.ActivityIndicatorStyle.BIG,
-		 color : 'white'
-		 });
+		style : Ti.UI.iPhone.ActivityIndicatorStyle.BIG,
+		color : 'white'
+		});
 
-		 loadingIcon.show();
+		loadingIcon.show();
 
-		 var loadingView = Ti.UI.createView({
-		 backgroundColor : '#aaaaaa',
-		 opacity : 0.9,
-		 borderRadius : 10,
-		 width : 80,
-		 height : 80
-		 });
+		var loadingView = Ti.UI.createView({
+		backgroundColor : '#aaaaaa',
+		opacity : 0.9,
+		borderRadius : 10,
+		width : 80,
+		height : 80
+		});
 
-		 loadingView.add(loadingIcon);
-		 self.add(loadingView);*/
-		
+		loadingView.add(loadingIcon);
+		self.add(loadingView);*/
+
 		// note: fql have to be in unicode encode and > is %3E
 		var query_url = 'https://graph.facebook.com/' + 'fql?q=' + 'SELECT+post_id+FROM+stream+WHERE+source_id=368537286624382' + '+AND+strpos(message,%27' + encodeURIComponent(qrData['raw']) + '%27)%3E=0' + '&access_token=' + fb.accessToken;
 		//alert(query_url);
 		//Ti.UI.Clipboard.setText(query_url);
+		//TODO: request timeout may cause duplicated http request. Didn't clean client?
 		var client = Ti.Network.createHTTPClient({
 			onload : function(e) {
 

@@ -193,8 +193,6 @@ function MainWindow() {
 					var db = Ti.Database.open('qute');
 					var datetime = new Date().toISOString();
 					var qr_type = -1;
-					Ti.API.info("test result is " + data.barcode.match(patt_http));
-					Ti.API.info("2nd test result is " + data.barcode.match(patt_http));
 					if (data.barcode.match(patt_http) == null) {
 						//other type: 1
 						//TODO: add more types
