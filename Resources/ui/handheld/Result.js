@@ -40,6 +40,8 @@ var Loading = require('ui/handheld/iLoading');
 var WhyWindow = require('ui/handheld/WhyWindow');
 var Keys = require('keys');
 
+var patt_http = /^(http|https)/gi;
+
 var sayIsFocused = false;
 
 //var loggedIn = false;
@@ -532,6 +534,7 @@ function Result(qrData, qrRow) {
 		if (qrData['title'] == qrData['raw']) {
 			var httpRequest = Ti.Network.createHTTPClient({
 				onload : function(e) {
+					console.log('response text:'+this.responseText);
 					var matches = this.responseText.match(/<title>(.*?)<\/title>/gi);
 					if (matches != null) {
 						console.log('found title:'+matches[0]);
@@ -563,7 +566,17 @@ function Result(qrData, qrRow) {
 				timeout : 5000
 			});
 			
-			httpRequest.open('GET',qrData['raw']);
+			var url;
+			if (qrData['raw'].search(patt_http) < 0){
+				// need to add http at beginning
+				url = 'http://'+qrData['raw'];
+			} else {
+				url = qrData['raw'];
+			}
+			
+			console.log('request url '+url);
+			
+			httpRequest.open('GET',url);
 			httpRequest.send();
 		}
 

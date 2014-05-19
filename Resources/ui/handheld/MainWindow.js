@@ -46,6 +46,7 @@ var ios7;
 var SCANNER_PIC_PLACEHOLDER_URL = '/images/pic_placeholder.png';
 var TABLE_CELL_HEIGHT = 60;
 var patt_http = /^(http|https)/gi;
+var patt_web = /^bit\.ly|^www\.|^tinyurl\.com|^goo\.gl|[a-zA-Z0-9\-]+\.(com|edu|gov|int|mil|net|org|biz|arpa|info|name|pro|aero|coop|museum|[a-zA-Z]{2}([\/]+[a-zA-Z0-9\/\-\?\$\=]*$|$))/g;
 var fb = require('facebook');
 var Toast = require('ui/handheld/iToast');
 var Loading = require('ui/handheld/iLoading');
@@ -193,7 +194,7 @@ function MainWindow() {
 					var db = Ti.Database.open('qute');
 					var datetime = new Date().toISOString();
 					var qr_type = -1;
-					if (data.barcode.match(patt_http) == null) {
+					if (data.barcode.search(patt_http) < 0 && data.barcode.search(patt_web) < 0) {
 						//other type: 1
 						//TODO: add more types
 						Ti.API.info("No. it's not link");
