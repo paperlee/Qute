@@ -661,7 +661,7 @@ function MainWindow() {
 
 	table.addEventListener('scroll', function(e) {
 		var offset = e.contentOffset.y;
-		Ti.API.info('offset: ' + offset);
+		//Ti.API.info('offset: ' + offset);
 
 		var fadeOut = Ti.UI.createAnimation({
 			opacity : 0,

@@ -418,11 +418,27 @@ function SettingsWindow() {
 			include_deleted : false
 		}, function(stat, reply) {
 			dropbox_files = reply['contents'];
+			var need_recheck_photo = true;
+			
 			if (dropbox_files.length == 0) {
 				pureExport();
 			} else {
 				console.log('Go importOrExport one by one!\n' + JSON.stringify(reply));
 				console.log('Cloud has ' + dropbox_files.length + ' files');
+				
+				// Below code too late to response!
+				/*var dropbox_files_amount = dropbox_files.length;
+				
+				client.metadata('Photo', {
+					list : true,
+					include_deleted : false
+				}, function(stat, reply) {
+					console.log('[2]Cloud has ' + reply['contents'].length + ' photos');
+					if (reply['contents'].length < dropbox_files_amount) {
+						need_recheck_photo = true;
+					}
+				});*/
+
 				// 2. Get local datas
 				var datasAndKeys = getAllData();
 				var datas = datasAndKeys[0];
@@ -574,30 +590,60 @@ function SettingsWindow() {
 								// Dropbox older than Local. Need to update dropbox data (upload content only)
 								// TODO: Debug
 								var obj = datas[at];
-								console.log('[2]Uploading data #' + datas[at].id + " = "+obj['id']);
+								console.log('[2]Uploading data #' + datas[at].id + " = " + obj['id']);
 								var datetime = (new Date()).toISOString();
 								obj['last_sync'] = datetime;
 								var fname = obj['sync_address'];
-								if (fname=='no'){
+								if (fname == 'no') {
 									// fetch file name from image name
 									var img_name = obj['img'].split('Qute/')[1];
 									fname = img_name.split('.')[0];
 								}
-								
+
 								client.put('Content/' + fname + '.json', JSON.stringify(obj), {
 									overwrite : true
 								}, function(stat, reply) {
 									Ti.API.info('stat:' + stat);
 									Ti.API.info('reply:' + JSON.stringify(reply));
 								});
-								
+
 								var db = Ti.Database.open('qute');
-								db.execute('UPDATE history SET last_sync=? WHERE id=?',datetime,obj['id']);
+								db.execute('UPDATE history SET last_sync=? WHERE id=?', datetime, obj['id']);
 
 							} else {
 								// Equal. Nothing to do.
 							}
 							// Kick out the handled obj
+
+							// TODO:Too heavy the sync action! Don't check everytime or do check if needed (ie. content length > photo length)
+							// Check if the photo missing
+							console.log('need_recheck_photo? '+need_recheck_photo + ' #'+at+'::'+datas[at]['sync_address']);
+							if (need_recheck_photo) {
+								var obj_p = datas[at];
+								var sync_name = obj_p['sync_address'];
+								if (sync_name == 'no') {
+									// fetch file name from image name
+									var img_name = obj_p['img'].split('Qute/')[1];
+									sync_name = img_name.split('.')[0];
+								}
+
+								var photo_path = 'Photo/' + sync_name + '.png';
+								client.metadata(photo_path, {}, function(stat, reply) {
+									//console.log('get what? '+reply.length+'::'+JSON.stringify(reply));
+									if (reply['is_deleted'] || reply['path'] === undefined) {
+										var photo_file = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory + obj_p['img']);
+										client.put(photo_path, photo_file.read(), {}, function(stat, reply) {
+											if (reply.error) {
+												Ti.API.error('Re-put image ERROR! ' + reply.error);
+											} else {
+												Ti.API.info('Re-put image successfully!' + JSON.stringify(reply));
+											}
+
+										});
+									}
+								});
+							}
+
 							datas.splice(at, 1);
 							data_keys.splice(at, 1);
 						}
@@ -606,7 +652,7 @@ function SettingsWindow() {
 				});
 				// 5. The rest local data: Upload (photo+content)
 				if (datas.length > 0) {
-					// TODO: There are something in local and not exist in dropbox. Need to upload them
+					// TODO: There are something in local and not exist in dropbox. Need to upload them (content+photo)
 
 				}
 			}
