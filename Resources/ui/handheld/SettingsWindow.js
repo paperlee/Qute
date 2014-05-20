@@ -345,6 +345,11 @@ function SettingsWindow() {
 			var photo_name = obj['img'].split('/')[1];
 			var unique_name = photo_name.split('.png')[0];
 
+			// Save last sync time and sync address in local
+			var datetime = new Date().toISOString();
+			obj['last_sync'] = datetime;
+			obj['sync_address'] = unique_name;
+
 			client.put('Content/' + unique_name + '.json', JSON.stringify(obj), {
 				overwrite : true
 			}, function(stat, reply) {
@@ -361,7 +366,7 @@ function SettingsWindow() {
 			});
 
 			// Update last_sync in local data
-			var datetime = new Date().toISOString();
+
 			db.execute('UPDATE history SET last_sync=?,sync_address=? WHERE id=?', datetime, unique_name, obj['id']);
 
 			//TODO: make dropbox file also include sync_address update
@@ -394,7 +399,7 @@ function SettingsWindow() {
 
 			datas.push(obj);
 			var img_file_name = obj['img'].split('/')[1];
-			conosle.log('img named: ' + img_file_name);
+			console.log('img named: ' + img_file_name);
 			data_keys.push(img_file_name.split('.')[0]);
 
 			rows.next();
@@ -404,6 +409,7 @@ function SettingsWindow() {
 	};
 
 	var importOrExport = function() {
+		// TODO: Error prove to avoid error uploading
 		console.log('method: importOrExport');
 		// 1. Get files metadata from dropbox
 		var dropbox_files = [];
@@ -430,7 +436,6 @@ function SettingsWindow() {
 					var at = data_keys.indexOf(id);
 					console.log('Path: ' + element['path'] + ':: ID: ' + id + ':: at:' + at);
 					console.log(element['modified'] + ' = ' + (new Date(element['modified'])).getTime());
-					//TODO: add real action to do import or export
 					if (at < 0) {
 						// Not existed in local. Download it
 						client.get(element['path'], {}, function(stat, reply, metadata) {
@@ -440,56 +445,57 @@ function SettingsWindow() {
 								var db = Ti.Database.open('qute');
 								db.execute('INSERT INTO history (title, date, qrtype, content, raw, img, loved, post_id, qute_link, last_update, last_sync, from_me, sync_address) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', content.title, content.date, content.qrtype, content.content, content.raw, content.img, content.loved, content.post_id, content.qute_link, content.last_update, content.last_sync, content.from_me, content.sync_address);
 								db.close();
-								var photo_path = JSON.parse(metadata).path.replace('Content', 'Photo');
+								var photo_path = JSON.parse(metadata)['path'].replace('Content', 'Photo');
 								photo_path = photo_path.replace('.json', '.png');
 								console.log('Photo path: ' + photo_path);
-								
+
 								// Make sure the Qute folder in local is created
 								var foldername = Ti.Filesystem.applicationDataDirectory + "Qute/";
 								var folder = Ti.Filesystem.getFile(foldername);
 								if (!folder.exists()) {
 									folder.createDirectory();
 								}
-								
+
 								// media can't be get by get() method
 								/*client.get(photo_path, {}, function(stat, reply, metadata) {
-									
-									//Save file to local storage
-									var img_name = JSON.parse(metadata)['path'].replace('/Photo','Qute'); // Get image file name
-									var filename = Ti.Filesystem.applicationDataDirectory + img_name;
-									var file = Ti.Filesystem.getFile(filename);
-									file.write(reply);
+
+								//Save file to local storage
+								var img_name = JSON.parse(metadata)['path'].replace('/Photo','Qute'); // Get image file name
+								var filename = Ti.Filesystem.applicationDataDirectory + img_name;
+								var file = Ti.Filesystem.getFile(filename);
+								file.write(reply);
 								});*/
-								
+
 								// Get photo's direct url and apply to imageView to store it
 								client.media(photo_path, {}, function(stat, reply) {
-									
+
 									var pp = photo_path;
 									//Save file to local storage
 									var img_name = pp.replace('/Photo', 'Qute');
 									var local_img_path = Ti.Filesystem.applicationDataDirectory + img_name;
 									var file = Ti.Filesystem.getFile(local_img_path);
-									
+									if (file.exists) {
+										file.deleteFile();
+									}
+
 									var xhr = Ti.Network.createHTTPClient({
-										onload: function(e){
+										onload : function(e) {
 											file.write(this.responseData);
 										},
-										onerror: function(e){
-											console.log('Get image fail! '+e.error);
+										onerror : function(e) {
+											console.log('Get image fail! ' + e.error);
 										},
-										timeout:2*60000
+										timeout : 2 * 60000
 									});
-									
-									xhr.open('GET',reply['url']);
-									xhr.send();
-									
 
-									console.log('Img url is ' + reply['url']+"::full path: "+pp);
-									
-									
+									xhr.open('GET', reply['url']);
+									xhr.send();
+
+									console.log('Img url is ' + reply['url'] + "::full path: " + pp);
+
 									//temp_img.addEventListener('load',saveImage);
 									//file.write(temp_img.toImage());
-									
+
 								});
 							}
 							//Ti.API.info('The file content: ' + JSON.parse(reply).title);
@@ -498,24 +504,113 @@ function SettingsWindow() {
 						// File existed.
 						// 4. Check if dropbox_file_date >(newer) local_file_date? YES:get EQUAL:skip NO:upload(content)
 						// tolerance: Newer - 1 min. - Equal - 1 min. - Older
-						console.log(element['modified'] + ' = ' + (new Date(element['modified'])).getTime());
-						var dropbox_file_date = (new Date(element['modified'])).getTime();
-						var local_file_date = (new Date(datas[at].last_update)).getTime();
-						if (dropbox_file_date > local_file_date + 60000) {
-							// Dropbox newer than Local. Need to download file
 
-						} else if (dropbox_file_date < local_file_date - 60000) {
-							// Dropbox older than Local. Need to update dropbox data
+						// Do rest action only if there is related time flag
+						if (datas[at].last_sync && datas[at].last_update && element['modified']) {
+							console.log(element['modified'] + ' = ' + (new Date(element['modified'])).getTime());
+							var dropbox_file_date = (new Date(element['modified'])).getTime();
+							var local_file_update_date = (new Date(datas[at].last_update)).getTime();
+							var local_file_sync_date = (new Date(datas[at].last_sync)).getTime();
+							if (dropbox_file_date > local_file_sync_date + 60000) {
+								// Dropbox newer than Local. Need to download file (get content only)
+								client.get(element['path'], {}, function(stat, reply, metadata) {
+									console.log('metadata:' + metadata);
+									var content = JSON.parse(reply);
+									if (content.title) {
+										console.log('Updating data #' + datas[at].id);
+										var db = Ti.Database.open('qute');
+										db.execute('UPDATE history SET title=?, date=?, qrtype=?, content=?, raw=?, img=?, loved=?, post_id=?, qute_link=?, last_update=?, last_sync=?, from_me=?, sync_address=? WHERE id=?', content.title, content.date, content.qrtype, content.content, content.raw, content.img, content.loved, content.post_id, content.qute_link, content.last_update, content.last_sync, content.from_me, content.sync_address, datas[at].id);
+										db.close();
+										var photo_path = JSON.parse(metadata)['path'].replace('Content', 'Photo');
+										photo_path = photo_path.replace('.json', '.png');
+										console.log('Photo path: ' + photo_path);
 
-						} else {
-							// Equal. Nothing to do.
+										// Make sure the Qute folder in local is created
+										// TODO:Not neccessary?
+										// !IMPORTANT: Not need to update image file. There shall be no way in app to update the image
+										/*var foldername = Ti.Filesystem.applicationDataDirectory + "Qute/";
+										 var folder = Ti.Filesystem.getFile(foldername);
+										 if (!folder.exists()) {
+										 folder.createDirectory();
+										 }
+
+										 // Get photo's direct url and apply to imageView to store it
+										 client.media(photo_path, {}, function(stat, reply) {
+
+										 var pp = photo_path;
+										 //Save file to local storage
+										 var img_name = pp.replace('/Photo', 'Qute');
+										 var local_img_path = Ti.Filesystem.applicationDataDirectory + img_name;
+										 var file = Ti.Filesystem.getFile(local_img_path);
+
+										 if (file.exists){
+										 file.deleteFile();
+										 }
+
+										 var xhr = Ti.Network.createHTTPClient({
+										 onload : function(e) {
+										 file.write(this.responseData);
+										 },
+										 onerror : function(e) {
+										 console.log('Get image fail! ' + e.error);
+										 },
+										 timeout : 2 * 60000
+										 });
+
+										 xhr.open('GET', reply['url']);
+										 xhr.send();
+
+										 console.log('Img url is ' + reply['url'] + "::full path: " + pp);
+
+										 //temp_img.addEventListener('load',saveImage);
+										 //file.write(temp_img.toImage());
+
+										 });*/
+									}
+									//Ti.API.info('The file content: ' + JSON.parse(reply).title);
+								});
+
+							} else if (dropbox_file_date < local_file_update_date - 60000) {
+								// Dropbox older than Local. Need to update dropbox data (upload content only)
+								// TODO: Debug
+								var obj = datas[at];
+								console.log('[2]Uploading data #' + datas[at].id + " = "+obj['id']);
+								var datetime = (new Date()).toISOString();
+								obj['last_sync'] = datetime;
+								var fname = obj['sync_address'];
+								if (fname=='no'){
+									// fetch file name from image name
+									var img_name = obj['img'].split('Qute/')[1];
+									fname = img_name.split('.')[0];
+								}
+								
+								client.put('Content/' + fname + '.json', JSON.stringify(obj), {
+									overwrite : true
+								}, function(stat, reply) {
+									Ti.API.info('stat:' + stat);
+									Ti.API.info('reply:' + JSON.stringify(reply));
+								});
+								
+								var db = Ti.Database.open('qute');
+								db.execute('UPDATE history SET last_sync=? WHERE id=?',datetime,obj['id']);
+
+							} else {
+								// Equal. Nothing to do.
+							}
+							// Kick out the handled obj
+							datas.splice(at, 1);
+							data_keys.splice(at, 1);
 						}
+
 					}
 				});
+				// 5. The rest local data: Upload (photo+content)
+				if (datas.length > 0) {
+					// TODO: There are something in local and not exist in dropbox. Need to upload them
+
+				}
 			}
 		});
-
-		// TODO: 5. The rest local data: Upload (photo+content)
 
 	};
 
