@@ -13,9 +13,12 @@ var locale = require('com.shareourideas.locale');
 var dropbox = require('dropbox');
 var cookiejar = require('com.kosso.cookiejar');
 
+var Sync = require('sync');
+
 var URL_QUTE = 'https://www.facebook.com/pages/Qute/368537286624382';
 
 function db2array(rows) {
+	
 	var returnArray = [];
 
 	var fieldCount;
@@ -42,6 +45,7 @@ function db2array(rows) {
 }
 
 function SettingsWindow() {
+	var sync = new Sync();
 
 	var btnClose = Ti.UI.createButton({
 		title : L('navibar_button_title_cancel'),
@@ -292,6 +296,12 @@ function SettingsWindow() {
 
 	syncRow.add(syncTitle);
 	syncRow.add(syncSwitch);
+	syncRow.addEventListener('click',function(e){
+		console.log('GoGoGo');
+		if (Ti.App.Properties.getBool('syncing')){
+			sync.login();
+		}
+	});
 
 	settingsSection.add(syncRow);
 
@@ -683,7 +693,10 @@ function SettingsWindow() {
 	syncSwitch.addEventListener('change', function(e) {
 		if (e.value) {
 			console.log('Start connecting to Dropbox');
-			if (client.isAuthorized()) {
+			// Try modulized sync functions
+			sync.login();
+			
+			/*if (client.isAuthorized()) {
 				console.log('Already logged in');
 				//getDelta();
 				doSync();
@@ -696,10 +709,13 @@ function SettingsWindow() {
 					//getDelta();
 					doSync();
 				});
-			}
+			}*/
 		} else {
 			// do logout
-			logout();
+			// Try modulized sync functions
+			sync.logout();
+			
+			//logout();
 		}
 	});
 

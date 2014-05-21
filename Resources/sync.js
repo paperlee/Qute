@@ -169,7 +169,7 @@ function sync() {
 									console.log('metadata:' + metadata);
 									var content = JSON.parse(reply);
 									if (content.title) {
-										console.log('Updating data #' + datas[at].id);
+										console.log('Updating data #' + datas[at]['id']);
 										var db = Ti.Database.open('qute');
 										db.execute('UPDATE history SET title=?, date=?, qrtype=?, content=?, raw=?, img=?, loved=?, post_id=?, qute_link=?, last_update=?, last_sync=?, from_me=?, sync_address=? WHERE id=?', content.title, content.date, content.qrtype, content.content, content.raw, content.img, content.loved, content.post_id, content.qute_link, content.last_update, content.last_sync, content.from_me, content.sync_address, datas[at].id);
 										db.close();
