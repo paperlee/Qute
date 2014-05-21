@@ -48,7 +48,7 @@ function SettingsWindow() {
 	var sync = new Sync();
 
 	var btnClose = Ti.UI.createButton({
-		title : L('navibar_button_title_cancel'),
+		title : L('navibar_button_title_close'),
 		style : Ti.UI.iPhone.SystemButtonStyle.BAR
 	});
 
@@ -299,7 +299,7 @@ function SettingsWindow() {
 	syncRow.addEventListener('click',function(e){
 		console.log('GoGoGo');
 		if (Ti.App.Properties.getBool('syncing')){
-			sync.login();
+			sync.loginAndSync();
 		}
 	});
 
@@ -694,7 +694,7 @@ function SettingsWindow() {
 		if (e.value) {
 			console.log('Start connecting to Dropbox');
 			// Try modulized sync functions
-			sync.login();
+			sync.loginAndSync();
 			
 			/*if (client.isAuthorized()) {
 				console.log('Already logged in');

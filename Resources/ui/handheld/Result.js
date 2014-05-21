@@ -529,15 +529,15 @@ function Result(qrData, qrRow) {
 		//HTTP type
 		buttonOpenInSafari.enabled = true;
 		
-		console.log('title = raw?:'+(qrData['title'] == qrData['raw'])+'::'+qrData['title'] + '::'+qrData['raw']);
+		//console.log('title = raw?:'+(qrData['title'] == qrData['raw'])+'::'+qrData['title'] + '::'+qrData['raw']);
 		// Try to get website title
 		if (qrData['title'] == qrData['raw']) {
 			var httpRequest = Ti.Network.createHTTPClient({
 				onload : function(e) {
-					console.log('response text:'+this.responseText);
+					//console.log('response text:'+this.responseText);
 					var matches = this.responseText.match(/<title>(.*?)<\/title>/gi);
 					if (matches != null) {
-						console.log('found title:'+matches[0]);
+						//console.log('found title:'+matches[0]);
 						var title_string = matches[0].substring(7,matches[0].length-8);
 						// Assign back title to db
 						qrData['title'] = title_string;

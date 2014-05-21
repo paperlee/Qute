@@ -86,6 +86,7 @@ function sync() {
 					var id = id2.split('.')[0];
 
 					var at = data_keys.indexOf(id);
+					console.log('Rest datas amount: ' + data_keys.length);
 					console.log('Path: ' + element['path'] + ':: ID: ' + id + ':: at:' + at);
 					console.log(element['modified'] + ' = ' + (new Date(element['modified'])).getTime());
 					if (at < 0) {
@@ -289,7 +290,41 @@ function sync() {
 				// 5. The rest local data: Upload (photo+content)
 				if (datas.length > 0) {
 					// TODO: There are something in local and not exist in dropbox. Need to upload them (content+photo)
+					var db = Ti.Database.open('qute');
+					datas.forEach(function(element, key, array) {
 
+						var photo_name = element['img'].split('/')[1];
+						var sync_address = photo_name.split('.png')[0];
+
+						var datetime = (new Date()).toISOString();
+						element['last_sync'] = datetime;
+						element['sync_address'] = sync_address;
+
+						client.put('Content/' + sync_address + '.json', JSON.stringify(element), {
+							overwrite : true
+						}, function(stat, reply) {
+							if (reply['error']) {
+								Ti.API.error('Error! ' + reply['error']);
+							}
+						});
+
+						var photo_file = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory + element['img']);
+						if (photo_file.exists()) {
+							client.put('Photo/' + photo_name, photo_file.read(), {
+								overwrite : true
+							}, function(stat, reply) {
+								if (reply['error']) {
+									//TODO:error msg may cause App crash?
+									Ti.API.error('Error! ' + reply['error']);
+								}
+							});
+						}
+						
+						
+						db.execute('UPDATE history SET last_sync=?,sync_address=? WHERE id=?', datetime, sync_address, element['id']);
+						
+					});
+					db.close();
 				}
 			}
 		});
@@ -367,7 +402,9 @@ function sync() {
 			Ti.App.Properties.setString('DROPBOX_TOKENS', null);
 			Ti.App.Properties.setBool('syncing', false);
 		},
-		login : function() {
+		loginAndSync : function() {
+			//TODO: add end_syncing event
+			Ti.App.fireEvent('start_syncing',{});
 			if (client.isAuthorized()) {
 				console.log('Already logged in');
 				//getDelta();
