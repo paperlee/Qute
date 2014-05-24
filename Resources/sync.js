@@ -59,7 +59,7 @@ function sync() {
 			if (dropbox_files.length == 0) {
 				pureExport();
 			} else {
-				console.log('Go importOrExport one by one!\n' + JSON.stringify(reply));
+				//console.log('Go importOrExport one by one!\n' + JSON.stringify(reply));
 				console.log('Cloud has ' + dropbox_files.length + ' files');
 
 				// Below code too late to response!
@@ -79,6 +79,11 @@ function sync() {
 				var datasAndKeys = getAllData();
 				var datas = datasAndKeys[0];
 				var data_keys = datasAndKeys[1];
+
+				// To define if all actions done
+				var end_counter = 0;
+				var total_amount = data_keys.length;
+
 				console.log('Local has ' + datas.length + ' datas. And ' + data_keys.length + ' keys');
 				// 3. Check if file exist in local? EXIST:continue NO:get
 				dropbox_files.forEach(function(element, key, array) {
@@ -90,6 +95,10 @@ function sync() {
 					console.log('Path: ' + element['path'] + ':: ID: ' + id + ':: at:' + at);
 					console.log(element['modified'] + ' = ' + (new Date(element['modified'])).getTime());
 					if (at < 0) {
+						
+						// Add one more obj that shall be completed
+						total_amount+=1;
+
 						// Not existed in local. Download it
 						client.get(element['path'], {}, function(stat, reply, metadata) {
 							console.log('metadata:' + metadata);
@@ -134,9 +143,20 @@ function sync() {
 									var xhr = Ti.Network.createHTTPClient({
 										onload : function(e) {
 											file.write(this.responseData);
+											end_counter++;
+											Ti.API.info('Current end counter: ' + end_counter);
+											if (end_counter >= total_amount) {
+												Ti.App.fireEvent('end_syncing', {});
+											}
 										},
 										onerror : function(e) {
 											console.log('Get image fail! ' + e.error);
+											end_counter++;
+											Ti.API.info('Current end counter: ' + end_counter);
+											if (end_counter >= total_amount) {
+												Ti.App.fireEvent('end_syncing', {});
+											}
+											//TODO: More consitions to consider sync_done in HTTPClient?
 										},
 										timeout : 2 * 60000
 									});
@@ -220,6 +240,12 @@ function sync() {
 
 										 });*/
 									}
+
+									end_counter++;
+									Ti.API.info('Current end counter: ' + end_counter);
+									if (end_counter >= total_amount) {
+										Ti.App.fireEvent('end_syncing', {});
+									}
 									//Ti.API.info('The file content: ' + JSON.parse(reply).title);
 								});
 
@@ -240,8 +266,13 @@ function sync() {
 								client.put('Content/' + fname + '.json', JSON.stringify(obj), {
 									overwrite : true
 								}, function(stat, reply) {
-									Ti.API.info('stat:' + stat);
-									Ti.API.info('reply:' + JSON.stringify(reply));
+									//Ti.API.info('stat:' + stat);
+									//Ti.API.info('reply:' + JSON.stringify(reply));
+									end_counter++;
+									Ti.API.info('Current end counter: ' + end_counter);
+									if (end_counter >= total_amount) {
+										Ti.App.fireEvent('end_syncing', {});
+									}
 								});
 
 								var db = Ti.Database.open('qute');
@@ -249,11 +280,17 @@ function sync() {
 
 							} else {
 								// Equal. Nothing to do.
+								end_counter++;
+								Ti.API.info('Current end counter: ' + end_counter);
+								if (end_counter >= total_amount) {
+									Ti.App.fireEvent('end_syncing', {});
+								}
 							}
 							// Kick out the handled obj
 
 							// TODO:Too heavy the sync action! Don't check everytime or do check if needed (ie. content length > photo length)
 							// Check if the photo missing
+							// TODO:syncing progress in this situation
 							console.log('need_recheck_photo? ' + need_recheck_photo + ' #' + at + '::' + datas[at]['sync_address']);
 							if (need_recheck_photo) {
 								var obj_p = datas[at];
@@ -289,7 +326,7 @@ function sync() {
 				});
 				// 5. The rest local data: Upload (photo+content)
 				if (datas.length > 0) {
-					// TODO: There are something in local and not exist in dropbox. Need to upload them (content+photo)
+					// There are something in local and not exist in dropbox. Need to upload them (content+photo)
 					var db = Ti.Database.open('qute');
 					datas.forEach(function(element, key, array) {
 
@@ -317,12 +354,16 @@ function sync() {
 									//TODO:error msg may cause App crash?
 									Ti.API.error('Error! ' + reply['error']);
 								}
+								end_counter++;
+								Ti.API.info('Current end counter: ' + end_counter);
+								if (end_counter >= total_amount) {
+									Ti.App.fireEvent('end_syncing', {});
+								}
 							});
 						}
-						
-						
+
 						db.execute('UPDATE history SET last_sync=?,sync_address=? WHERE id=?', datetime, sync_address, element['id']);
-						
+
 					});
 					db.close();
 				}
@@ -333,6 +374,7 @@ function sync() {
 	var pureExport = function() {
 		var db = Ti.Database.open('qute');
 		var rows = db.execute('SELECT * FROM history ORDER BY id DESC');
+		var end_counter = 0;
 
 		var fieldCount;
 		//fieldCount is property in Android
@@ -341,6 +383,8 @@ function sync() {
 		} else {
 			fieldCount = rows.fieldCount();
 		}
+
+		var rows_amount = rows.rowCount;
 
 		while (rows.isValidRow()) {
 			var obj = {};
@@ -359,23 +403,29 @@ function sync() {
 			client.put('Content/' + unique_name + '.json', JSON.stringify(obj), {
 				overwrite : true
 			}, function(stat, reply) {
-				Ti.API.info('stat:' + stat);
-				Ti.API.info('reply:' + JSON.stringify(reply));
+				//Ti.API.info('stat:' + stat);
+				//Ti.API.info('reply:' + JSON.stringify(reply));
 			});
 
 			var photo_file = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory + obj['img']);
 			client.put('Photo/' + photo_name, photo_file.read(), {
 				overwrite : true
 			}, function(stat, reply) {
-				Ti.API.info('stat:' + stat);
-				Ti.API.info('reply:' + JSON.stringify(reply));
+				//Ti.API.info('stat:' + stat);
+				//Ti.API.info('reply:' + JSON.stringify(reply));
+				// Calculate how many rows are done. Fire end_syncing event whenn all rows are done.
+				console.log('End counter: ' + end_counter);
+				end_counter++;
+				Ti.API.info('Current end counter: ' + end_counter);
+				if (end_counter >= rows_amount) {
+					Ti.App.fireEvent('end_syncing', {});
+				}
 			});
 
 			// Update last_sync in local data
 
 			db.execute('UPDATE history SET last_sync=?,sync_address=? WHERE id=?', datetime, unique_name, obj['id']);
 
-			//TODO: make dropbox file also include sync_address update
 			rows.next();
 		}
 		db.close();
@@ -404,7 +454,7 @@ function sync() {
 		},
 		loginAndSync : function() {
 			//TODO: add end_syncing event
-			Ti.App.fireEvent('start_syncing',{});
+			Ti.App.fireEvent('start_syncing', {});
 			if (client.isAuthorized()) {
 				console.log('Already logged in');
 				//getDelta();

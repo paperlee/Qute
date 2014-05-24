@@ -96,6 +96,7 @@
 	<string name="navibar_button_title_cancel">Cancel</string>
 	<string name="settings_title_language">Language</string>
 	<string name="settings_title_sync">Sync</string>
+	<string name="settings_title_syncing">Syncing...</string>
 	<string name="settings_power_by">Powered by</string>
 	
 	<!-- Toast -->

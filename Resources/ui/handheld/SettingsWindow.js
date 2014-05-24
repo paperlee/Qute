@@ -279,6 +279,7 @@ function SettingsWindow() {
 		selectionStyle : Ti.UI.iPhone.TableViewCellSelectionStyle.GRAY
 	});
 
+	//TODO: check if is syncing now and change the title of syncTitle
 	var syncTitle = Ti.UI.createLabel({
 		font : {
 			fontSize : 16
@@ -287,7 +288,7 @@ function SettingsWindow() {
 		left : 12,
 		color : 'black'
 	});
-
+	
 	var syncSwitch = Ti.UI.createSwitch({
 		value : Ti.App.Properties.getBool('syncing'),
 		color : COLOR_PURPLE,
@@ -689,7 +690,23 @@ function SettingsWindow() {
 
 	 });
 	 });*/
-
+	
+	// Listen start_syncing and end_syncing event to show syncing status
+	Ti.App.addEventListener('start_syncing',startSyncing);
+	
+	function startSyncing(e){
+		// Syncing started
+		syncTitle.text = L('settings_title_syncing');
+		
+	}
+	
+	Ti.App.addEventListener('end_syncing',endSyncing);
+	
+	function endSyncing(e){
+		// End syncing
+		syncTitle.text = L('settings_title_sync');
+	}
+	
 	syncSwitch.addEventListener('change', function(e) {
 		if (e.value) {
 			console.log('Start connecting to Dropbox');
@@ -875,13 +892,21 @@ function SettingsWindow() {
 		modalTransitionStyle : Ti.UI.iPhone.MODAL_TRANSITION_STYLE_COVER_VERTICAL,
 		modalStyle : Ti.UI.iPhone.MODAL_PRESENTATION_CURRENT_CONTEXT
 	});
-
+	
+	main.addEventListener('close',function(e){
+		//Ti.API.info('close: From main');
+		// Release memory
+		Ti.App.removeEventListener('start_syncing',startSyncing);
+		Ti.App.removeEventListener('end_syncing',endSyncing);
+	});
+	
 	btnClose.addEventListener('click', function(e) {
+		
 		navWin.close({
 			transition : Ti.UI.iPhone.AnimationStyle.CURL_DOWN
 		});
 	});
-
+	
 	//Save the settings
 	btnSave.addEventListener('click', function(e) {
 
