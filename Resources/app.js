@@ -56,6 +56,10 @@ var client = dropbox.createClient({
 		Ti.App.Properties.setBool('syncing',false);
 	}
 	
+	if (!Ti.App.Properties.hasProperty('latestSync')){
+		Ti.App.Properties.setString('latestSync','none');
+	}
+	
 	//TODO:Set uo language! Below code not work!
 	//store current local
 	if (!Ti.App.Properties.hasProperty('locale')){

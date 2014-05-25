@@ -75,7 +75,8 @@ function SettingsWindow() {
 	var powerByDropboxView = Ti.UI.createView({
 		width : Ti.UI.FILL,
 		height : 30,
-		layout : 'horizontal'
+		layout : 'horizontal',
+		top:0
 	});
 
 	var powerByText = Ti.UI.createLabel({
@@ -91,12 +92,79 @@ function SettingsWindow() {
 		image : 'images/icon_dropbox.png',
 		left : 2
 	});
-
+	
 	powerByDropboxView.add(powerByText);
 	powerByDropboxView.add(dropboxImage);
-
+	
+	var latestSyncView = Ti.UI.createView({
+		width : Ti.UI.FILL,
+		height : 30,
+		layout : 'horizontal',
+		top:30
+	});
+	
+	var latestSyncTitle = Ti.UI.createLabel({
+		font : {
+			fontSize : 12,
+			fontStyle : 'italic'
+		},
+		color : '#999999',
+		text : L('settings_latest_sync'),
+		left:100
+	});
+	
+	var latest_sync_date_string = Ti.App.Properties.getString('latestSync');
+	// TODO: Check if not yet sync
+	if (latest_sync_date_string != 'none'){
+		
+	}
+	
+	var latestSyncDate = Ti.UI.createLabel({
+		font : {
+			fontSize : 12,
+			fontStyle : 'italic'
+		},
+		color : '#999999',
+		text : latest_sync_date_string,
+		left : 8
+	});
+	
+	latestSyncView.add(latestSyncTitle);
+	latestSyncView.add(latestSyncDate);
+	
+	var syncFooterView = Ti.UI.createView({
+		width:Ti.UI.FILL,
+		height:30,
+		layout:'vertical'
+	});
+	
+	syncFooterView.add(powerByDropboxView);
+	syncFooterView.add(latestSyncView);
+	
+	//var transform_matrix = Ti.UI.create2DMatrix();
+	//transform_matrix.translate(0,-30);
+	
+	var sync_date_animation1 = Ti.UI.createAnimation({
+		top:-30,
+		duration:600,
+		delay:2000,
+		autoreverse:true,
+		repeat:10
+	});
+	
+	var sync_date_animation2 = Ti.UI.createAnimation({
+		top:-30,
+		duration:600,
+		delay:2000,
+		autoreverse:true,
+		repeat:10
+	});
+	
+	powerByDropboxView.animate(sync_date_animation1);
+	latestSyncView.animate(sync_date_animation2);
+	
 	var settingsSection = Ti.UI.createTableViewSection({
-		footerView : powerByDropboxView
+		footerView : syncFooterView
 	});
 
 	var languageRow = Ti.UI.createTableViewRow({

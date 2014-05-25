@@ -98,6 +98,7 @@
 	<string name="settings_title_sync">Sync</string>
 	<string name="settings_title_syncing">Syncing...</string>
 	<string name="settings_power_by">Powered by</string>
+	<string name="settings_latest_sync">Latest sync at </string>
 	
 	<!-- Toast -->
 	<string name="toast_placeholder">Well...What\'s the message?</string>

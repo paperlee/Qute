@@ -455,6 +455,7 @@ function sync() {
 		loginAndSync : function() {
 			//TODO: add end_syncing event
 			Ti.App.fireEvent('start_syncing', {});
+			Ti.App.Properties.setString('latestSync',(new Date()).toISOString());
 			if (client.isAuthorized()) {
 				console.log('Already logged in');
 				//getDelta();
