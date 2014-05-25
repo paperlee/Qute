@@ -96,6 +96,8 @@
 	<string name="navibar_button_title_cancel">取消</string>
 	<string name="settings_title_language">語言</string>
 	<string name="settings_title_sync">同步</string>
+	<string name="settings_title_syncing">同步中...</string>
+	<string name="settings_latest_sync">最近一次同步: </string>
 	<string name="settings_power_by">Powered by</string>
 	
 	<!-- Toast -->

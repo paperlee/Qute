@@ -44,6 +44,23 @@ function db2array(rows) {
 	return returnArray;
 }
 
+function toFormatedDateString(datetime){
+	var yyyy = datetime.getFullYear();
+	var mon = datetime.getMonth()+1;
+	var dd = datetime.getDate();
+	var hh = datetime.getHours();
+	var mm = datetime.getMinutes();
+	mm = '0'+mm;
+	mm = mm.slice(-2);
+	var pmam = 'AM';
+	if (hh>12){
+		hh -=12;
+		pmam = 'PM';
+	}
+	var timeStr = yyyy+'/'+mon+'/'+dd+' '+hh+':'+mm+' '+pmam;
+	return timeStr;
+}
+
 function SettingsWindow() {
 	var sync = new Sync();
 
@@ -110,23 +127,27 @@ function SettingsWindow() {
 		},
 		color : '#999999',
 		text : L('settings_latest_sync'),
-		left:100
+		left:64,
+		top:6
 	});
 	
 	var latest_sync_date_string = Ti.App.Properties.getString('latestSync');
 	// TODO: Check if not yet sync
 	if (latest_sync_date_string != 'none'){
-		
+		latest_sync_date_string = toFormatedDateString(new Date(latest_sync_date_string));
+		//latest_sync_date_string = (new Date(latest_sync_date_string)).toLocaleString();
 	}
 	
 	var latestSyncDate = Ti.UI.createLabel({
 		font : {
 			fontSize : 12,
-			fontStyle : 'italic'
+			fontWeight:'bold',
+			fontFamily:'monospace'
 		},
 		color : '#999999',
 		text : latest_sync_date_string,
-		left : 8
+		left : 2,
+		top:9
 	});
 	
 	latestSyncView.add(latestSyncTitle);
@@ -134,8 +155,7 @@ function SettingsWindow() {
 	
 	var syncFooterView = Ti.UI.createView({
 		width:Ti.UI.FILL,
-		height:30,
-		layout:'vertical'
+		height:30
 	});
 	
 	syncFooterView.add(powerByDropboxView);
@@ -144,7 +164,35 @@ function SettingsWindow() {
 	//var transform_matrix = Ti.UI.create2DMatrix();
 	//transform_matrix.translate(0,-30);
 	
-	var sync_date_animation1 = Ti.UI.createAnimation({
+	function applyAnimation(view){
+		var moveUp = Ti.UI.createAnimation({
+			top:view.top-30,
+			duration:600,
+			delay:2000,
+			autoreverse:false
+		});
+		
+		var moveDown = Ti.UI.createAnimation({
+			top:view.top,
+			duration:600,
+			delay:10000,
+			autoreverse:false
+		});
+		
+		view.animate(moveUp);
+		
+		moveUp.addEventListener('complete',function(e){
+			//console.log('[1]Applied view top: '+view.top);
+			view.animate(moveDown);
+		});
+		
+		moveDown.addEventListener('complete',function(e){
+			//console.log('[2]Applied view top: '+view.top);
+			view.animate(moveUp);
+		});
+	}
+	
+	/*var sync_date_animation1 = Ti.UI.createAnimation({
 		top:-30,
 		duration:600,
 		delay:2000,
@@ -158,10 +206,13 @@ function SettingsWindow() {
 		delay:2000,
 		autoreverse:true,
 		repeat:10
-	});
+	});*/
 	
-	powerByDropboxView.animate(sync_date_animation1);
-	latestSyncView.animate(sync_date_animation2);
+	//powerByDropboxView.animate(sync_date_animation1);
+	//latestSyncView.animate(sync_date_animation2);
+	
+	applyAnimation(powerByDropboxView);
+	applyAnimation(latestSyncView);
 	
 	var settingsSection = Ti.UI.createTableViewSection({
 		footerView : syncFooterView
