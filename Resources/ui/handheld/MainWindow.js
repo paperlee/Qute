@@ -763,7 +763,7 @@ function MainWindow() {
 		}
 	}
 
-	function updateTableRows() {
+	/*function updateTableRows() {
 		//var now = new Date();
 		Ti.API.info('UPDATED TABLE');
 		var db = Ti.Database.open('qute');
@@ -812,7 +812,7 @@ function MainWindow() {
 			lovedRows = [];
 		}
 
-	}
+	}*/
 
 	function refreshTable(section) {
 		//section types: 0 history  1 loved

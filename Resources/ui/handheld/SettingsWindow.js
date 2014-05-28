@@ -168,7 +168,7 @@ function SettingsWindow() {
 		var moveUp = Ti.UI.createAnimation({
 			top:view.top-30,
 			duration:600,
-			delay:2000,
+			delay:4000,
 			autoreverse:false
 		});
 		
@@ -211,8 +211,30 @@ function SettingsWindow() {
 	//powerByDropboxView.animate(sync_date_animation1);
 	//latestSyncView.animate(sync_date_animation2);
 	
-	applyAnimation(powerByDropboxView);
-	applyAnimation(latestSyncView);
+	
+	if (latest_sync_date_string != 'none'){
+		// Apply animation only if the latest sync date exists
+		applyAnimation(powerByDropboxView);
+		applyAnimation(latestSyncView);
+	}
+	
+	function reapplyLatestSyncDate(e){
+		var latest_sync_date = Ti.App.Properties.getString('latestSync');
+		
+		if (latestSyncDate.text == 'none'){
+			// Need to apply animation
+			applyAnimation(powerByDropboxView);
+			applyAnimation(latestSyncView);
+		}
+		
+		if (latest_sync_date != 'none'){
+			latestSyncDate.text = toFormatedDateString(new Date(latest_sync_date));
+		}
+		
+	}
+	
+	Ti.App.addEventListener('end_syncing',reapplyLatestSyncDate);
+	
 	
 	var settingsSection = Ti.UI.createTableViewSection({
 		footerView : syncFooterView
@@ -1017,6 +1039,7 @@ function SettingsWindow() {
 		// Release memory
 		Ti.App.removeEventListener('start_syncing',startSyncing);
 		Ti.App.removeEventListener('end_syncing',endSyncing);
+		Ti.App.removeEventListener('end_syncing',reapplyLatestSyncDate);
 	});
 	
 	btnClose.addEventListener('click', function(e) {

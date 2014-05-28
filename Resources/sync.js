@@ -79,6 +79,9 @@ function sync() {
 				var datasAndKeys = getAllData();
 				var datas = datasAndKeys[0];
 				var data_keys = datasAndKeys[1];
+				
+				// To store ids which were updated in db
+				var changed_ids = [];
 
 				// To define if all actions done
 				var end_counter = 0;
@@ -106,6 +109,7 @@ function sync() {
 							if (content.title) {
 								var db = Ti.Database.open('qute');
 								db.execute('INSERT INTO history (title, date, qrtype, content, raw, img, loved, post_id, qute_link, last_update, last_sync, from_me, sync_address) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', content.title, content.date, content.qrtype, content.content, content.raw, content.img, content.loved, content.post_id, content.qute_link, content.last_update, content.last_sync, content.from_me, content.sync_address);
+								changed_ids.push(db.lastInsertRowId);
 								db.close();
 								var photo_path = JSON.parse(metadata)['path'].replace('Content', 'Photo');
 								photo_path = photo_path.replace('.json', '.png');
@@ -146,7 +150,8 @@ function sync() {
 											end_counter++;
 											Ti.API.info('Current end counter: ' + end_counter);
 											if (end_counter >= total_amount) {
-												Ti.App.fireEvent('end_syncing', {});
+												Ti.API.info('Changed ids: '+changed_ids);
+												Ti.App.fireEvent('end_syncing', {changed_ids:changed_ids});
 											}
 										},
 										onerror : function(e) {
@@ -154,7 +159,8 @@ function sync() {
 											end_counter++;
 											Ti.API.info('Current end counter: ' + end_counter);
 											if (end_counter >= total_amount) {
-												Ti.App.fireEvent('end_syncing', {});
+												Ti.API.info('Changed ids: '+changed_ids);
+												Ti.App.fireEvent('end_syncing', {changed_ids:changed_ids});
 											}
 											//TODO: More consitions to consider sync_done in HTTPClient?
 										},
@@ -190,9 +196,11 @@ function sync() {
 									console.log('metadata:' + metadata);
 									var content = JSON.parse(reply);
 									if (content.title) {
-										console.log('Updating data #' + datas[at]['id']);
+										//console.log('Updating data #' + datas[at]['id']);
 										var db = Ti.Database.open('qute');
+										// TODO:Weird error? datas[at].id undefined?
 										db.execute('UPDATE history SET title=?, date=?, qrtype=?, content=?, raw=?, img=?, loved=?, post_id=?, qute_link=?, last_update=?, last_sync=?, from_me=?, sync_address=? WHERE id=?', content.title, content.date, content.qrtype, content.content, content.raw, content.img, content.loved, content.post_id, content.qute_link, content.last_update, content.last_sync, content.from_me, content.sync_address, datas[at].id);
+										changed_ids.push(db.lastInsertRowId);
 										db.close();
 										var photo_path = JSON.parse(metadata)['path'].replace('Content', 'Photo');
 										photo_path = photo_path.replace('.json', '.png');
@@ -244,7 +252,8 @@ function sync() {
 									end_counter++;
 									Ti.API.info('Current end counter: ' + end_counter);
 									if (end_counter >= total_amount) {
-										Ti.App.fireEvent('end_syncing', {});
+										Ti.API.info('Changed ids: '+changed_ids);
+										Ti.App.fireEvent('end_syncing', {changed_ids:changed_ids});
 									}
 									//Ti.API.info('The file content: ' + JSON.parse(reply).title);
 								});
@@ -271,7 +280,8 @@ function sync() {
 									end_counter++;
 									Ti.API.info('Current end counter: ' + end_counter);
 									if (end_counter >= total_amount) {
-										Ti.App.fireEvent('end_syncing', {});
+										Ti.API.info('Changed ids: '+changed_ids);
+										Ti.App.fireEvent('end_syncing', {changed_ids:changed_ids});
 									}
 								});
 
@@ -283,7 +293,8 @@ function sync() {
 								end_counter++;
 								Ti.API.info('Current end counter: ' + end_counter);
 								if (end_counter >= total_amount) {
-									Ti.App.fireEvent('end_syncing', {});
+									Ti.API.info('Changed ids: '+changed_ids);
+									Ti.App.fireEvent('end_syncing', {changed_ids:changed_ids});
 								}
 							}
 							// Kick out the handled obj
@@ -357,7 +368,8 @@ function sync() {
 								end_counter++;
 								Ti.API.info('Current end counter: ' + end_counter);
 								if (end_counter >= total_amount) {
-									Ti.App.fireEvent('end_syncing', {});
+									Ti.API.info('Changed ids: '+changed_ids);
+									Ti.App.fireEvent('end_syncing', {changed_ids:changed_ids});
 								}
 							});
 						}

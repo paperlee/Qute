@@ -535,6 +535,7 @@ function Result(qrData, qrRow) {
 			var httpRequest = Ti.Network.createHTTPClient({
 				onload : function(e) {
 					//console.log('response text:'+this.responseText);
+					// TODO:better match pattern
 					var matches = this.responseText.match(/<title>(.*?)<\/title>/gi);
 					if (matches != null) {
 						//console.log('found title:'+matches[0]);

@@ -99,6 +99,7 @@
 	<string name="settings_title_syncing">同步中...</string>
 	<string name="settings_latest_sync">最近一次同步: </string>
 	<string name="settings_power_by">Powered by</string>
+	<string name="settings_last_sync_never">從未同步</string>
 
 	<!-- Toast -->
 	<string name="toast_placeholder">嗯...你是想干嘛？</string>
