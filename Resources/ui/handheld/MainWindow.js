@@ -813,6 +813,19 @@ function MainWindow() {
 		}
 
 	}*/
+	
+	Ti.App.addEventListener('end_syncing',function(e){
+		var changed_ids = e.changed_ids;
+		console.log('This time syncing changed '+changed_ids.length+' items');
+		if (changed_ids.length > 0){
+			// Do refresh only if there were something changed
+			var db = Ti.Database.open('qute');
+			changed_ids.forEach(function(element,key,array){
+				
+			});
+			db.close();
+		}
+	});
 
 	function refreshTable(section) {
 		//section types: 0 history  1 loved

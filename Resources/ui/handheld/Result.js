@@ -269,7 +269,7 @@ function Result(qrData, qrRow) {
 		bottom : 44,
 		width : Ti.UI.FILL,
 		height : 100,
-		backgroundColor : '9a000000'
+		backgroundColor : '#9a000000'
 	});
 
 	var guideBottomBg = Ti.UI.createView({

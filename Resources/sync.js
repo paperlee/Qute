@@ -187,10 +187,12 @@ function sync() {
 						// Do rest action only if there is related time flag
 						if (datas[at].last_sync && datas[at].last_update && element['modified']) {
 							console.log(element['modified'] + ' = ' + (new Date(element['modified'])).getTime());
+							
 							var dropbox_file_date = (new Date(element['modified'])).getTime();
 							var local_file_update_date = (new Date(datas[at].last_update)).getTime();
 							var local_file_sync_date = (new Date(datas[at].last_sync)).getTime();
 							if (dropbox_file_date > local_file_sync_date + 60000) {
+								var obj = datas[at];
 								// Dropbox newer than Local. Need to download file (get content only)
 								client.get(element['path'], {}, function(stat, reply, metadata) {
 									console.log('metadata:' + metadata);
@@ -199,7 +201,7 @@ function sync() {
 										//console.log('Updating data #' + datas[at]['id']);
 										var db = Ti.Database.open('qute');
 										// TODO:Weird error? datas[at].id undefined?
-										db.execute('UPDATE history SET title=?, date=?, qrtype=?, content=?, raw=?, img=?, loved=?, post_id=?, qute_link=?, last_update=?, last_sync=?, from_me=?, sync_address=? WHERE id=?', content.title, content.date, content.qrtype, content.content, content.raw, content.img, content.loved, content.post_id, content.qute_link, content.last_update, content.last_sync, content.from_me, content.sync_address, datas[at].id);
+										db.execute('UPDATE history SET title=?, date=?, qrtype=?, content=?, raw=?, img=?, loved=?, post_id=?, qute_link=?, last_update=?, last_sync=?, from_me=?, sync_address=? WHERE id=?', content.title, content.date, content.qrtype, content.content, content.raw, content.img, content.loved, content.post_id, content.qute_link, content.last_update, content.last_sync, content.from_me, content.sync_address, obj.id);
 										changed_ids.push(db.lastInsertRowId);
 										db.close();
 										var photo_path = JSON.parse(metadata)['path'].replace('Content', 'Photo');
