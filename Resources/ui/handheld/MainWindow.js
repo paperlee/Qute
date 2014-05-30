@@ -27,6 +27,7 @@ var need_refresh = false;
 var loveds = [];
 var history = [];
 var historyRows = [];
+var historyIds = [];
 var lovedRows = [];
 var iOS7 = isIOS7Plus();
 var theTop = iOS7 ? 20 : 0;
@@ -261,7 +262,11 @@ function MainWindow() {
 					};
 
 					var history_result = db.execute('SELECT * FROM history ORDER BY id DESC');
-					history = db2array(history_result);
+					var temp_historys = db2array(history_result);
+					history = temp_historys[0];
+					historyIds = temp_historys[1];
+					temp_historys = null;
+					
 					history_amount = history.length;
 					db.close();
 
@@ -431,12 +436,14 @@ function MainWindow() {
 	history_amount = history_result.rowCount;
 	if (history_result.rowCount > 0) {
 		history = [];
+		historyIds = [];
 		var i = 0;
 		//history = db2array(history_result);
 		//var rows = [];
 		while (history_result.isValidRow()) {
 			element = dbRow2Array(history_result);
 			history.push(element);
+			historyIds.push(element.id);
 			row = new QRRow(element);
 			row.name = 'row' + i;
 
@@ -816,13 +823,35 @@ function MainWindow() {
 	
 	Ti.App.addEventListener('end_syncing',function(e){
 		var changed_ids = e.changed_ids;
-		console.log('This time syncing changed '+changed_ids.length+' items');
-		if (changed_ids.length > 0){
-			// Do refresh only if there were something changed
+		var insert_ids = e.insert_ids;
+		console.log('This time syncing changed '+changed_ids.length+' items and inserted '+insert_ids.length+' items.');
+		if (changed_ids.length+insert_ids.length > 0){
+			// Do refresh only if there were something changed or inserted
 			var db = Ti.Database.open('qute');
+			// TODO:debug
 			changed_ids.forEach(function(element,key,array){
-				
+				var at = historyIds.indexOf(element);
+				if (at >= 0){
+					Ti.API.info('found match at '+at+'. History item is '+history[at]);
+					historyRows[at].fireEvent('status_updated');
+					var newDataRow = db.execute('SELECT * FROM history WHERE id=?',element);
+					history[at] = dbRow2Array(newDataRow);
+					newDataRow = null;
+				} else {
+					Ti.API.info('Error? Can\'t found match');
+				}
 			});
+			
+			// Insert new rows
+			insert_ids.forEach(function(element,key,array){
+				var newDataRow = db.execute('SELECT * FROM history WHERE id=?',element);
+				var newRow = history.unshift(dbRow2Array(newDataRow));
+				historyIds.unshift(element);
+				historyRows.unshift(newRow);
+				newDataRow = null;
+				newRow = null;
+			});
+			
 			db.close();
 		}
 	});
@@ -1208,7 +1237,8 @@ function MainWindow() {
 
 function db2array(rows) {
 	var returnArray = [];
-
+	var ids = [];
+	
 	var fieldCount;
 	//fieldCount is property in Android
 	if (Ti.Platform.name === 'android') {
@@ -1226,10 +1256,11 @@ function db2array(rows) {
 		}
 		console.log(obj);
 		returnArray.push(obj);
+		ids.push(obj.id);
 		rows.next();
 	}
-	console.log(returnArray);
-	return returnArray;
+	//console.log(returnArray);
+	return [returnArray,ids];
 }
 
 function dbRow2Array(row) {
