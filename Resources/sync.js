@@ -233,7 +233,7 @@ function sync() {
 										var db = Ti.Database.open('qute');
 										// TODO:Weird error? datas[at].id undefined?
 										db.execute('UPDATE history SET title=?, date=?, qrtype=?, content=?, raw=?, img=?, loved=?, post_id=?, qute_link=?, last_update=?, last_sync=?, from_me=?, sync_address=? WHERE id=?', content.title, content.date, content.qrtype, content.content, content.raw, content.img, content.loved, content.post_id, content.qute_link, content.last_update, content.last_sync, content.from_me, content.sync_address, obj.id);
-										changed_ids.push(db.lastInsertRowId);
+										changed_ids.push(obj.id);
 										db.close();
 										var photo_path = JSON.parse(metadata)['path'].replace('Content', 'Photo');
 										photo_path = photo_path.replace('.json', '.png');
