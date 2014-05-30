@@ -83,15 +83,13 @@ var client = dropbox.createClient({
 		}
 	}
 	
-	Ti.API.info('The locale is '+Ti.Platform.locale);
-	Ti.API.info('Current locale is '+Ti.App.Properties.getString('locale'));
-	Ti.API.info('Custom? '+Ti.App.Properties.getBool('customLocal'));
-	
 	//init db
 	var db = Ti.Database.open('qute');
 	db.execute('CREATE TABLE IF NOT EXISTS history (id INTEGER PRIMARY KEY, title, date, qrtype INTEGER, content, raw, img, loved INTEGER, post_id, qute_link, last_update, last_sync, from_me INTEGER DEFAULT 0, sync_address TEXT DEFAULT no)');
 	//db.execute('ALTER TABLE history ADD COLUMN from_me INTEGER DEFAULT 0');
 	db.execute('CREATE TABLE IF NOT EXISTS _system (version)');
+	
+	db.execute('CREATE TABLE IF NOT EXISTS _deleted (deleted_key)');
 	
 	var versionSet = db.execute('SELECT * FROM _system');
 	if (versionSet.rowCount == 0){

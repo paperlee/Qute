@@ -220,8 +220,8 @@ function MainWindow() {
 
 					//Save file to local storage
 					// TODO:careful! too long the file name!
-					var img_file_name = (new Date()).getTime()+''+db.lastInsertRowId;
-					console.log('new image name is '+img_file_name);
+					var img_file_name = (new Date()).getTime() + '' + db.lastInsertRowId;
+					console.log('new image name is ' + img_file_name);
 					var filename_part = "Qute/" + img_file_name + ".png";
 					//var filename_part = "Qute/" + getUniqueFileName() + ".png";
 					var filename = Ti.Filesystem.applicationDataDirectory + filename_part;
@@ -266,7 +266,7 @@ function MainWindow() {
 					history = temp_historys[0];
 					historyIds = temp_historys[1];
 					temp_historys = null;
-					
+
 					history_amount = history.length;
 					db.close();
 
@@ -722,9 +722,9 @@ function MainWindow() {
 		//Ti.API.info('Is online or not? '+Ti.Network.online);
 		//alert('Is online or not? '+Ti.Network.online);
 		//For version 1.0.0 -> 1.1.0
-		Ti.App.Properties.setBool('loggedin',true);
-	} else if (Ti.App.Properties.getBool('skipped')){
-		//skipped	
+		Ti.App.Properties.setBool('loggedin', true);
+	} else if (Ti.App.Properties.getBool('skipped')) {
+		//skipped
 	} else {
 		// Check if the user is already loggedin once. To avoid network status disconnect problem
 		if (!Ti.App.Properties.getBool('loggedin')) {
@@ -771,87 +771,88 @@ function MainWindow() {
 	}
 
 	/*function updateTableRows() {
-		//var now = new Date();
-		Ti.API.info('UPDATED TABLE');
-		var db = Ti.Database.open('qute');
-		var history_result = db.execute('SELECT * FROM history ORDER BY id DESC');
-		history_amount = history_result.rowCount;
-		if (history_result.rowCount > 0) {
-			//history = db2array(history_result);
-			history = [];
-			historyRows = [];
-			loveds = [];
-			lovedRows = [];
-			var row;
-			var element;
-			var i = 0;
-			while (history_result.isValidRow()) {
-				element = dbRow2Array(history_result);
-				history.push(element);
+	 //var now = new Date();
+	 Ti.API.info('UPDATED TABLE');
+	 var db = Ti.Database.open('qute');
+	 var history_result = db.execute('SELECT * FROM history ORDER BY id DESC');
+	 history_amount = history_result.rowCount;
+	 if (history_result.rowCount > 0) {
+	 //history = db2array(history_result);
+	 history = [];
+	 historyRows = [];
+	 loveds = [];
+	 lovedRows = [];
+	 var row;
+	 var element;
+	 var i = 0;
+	 while (history_result.isValidRow()) {
+	 element = dbRow2Array(history_result);
+	 history.push(element);
 
-				row = new QRRow(element);
-				row.name = 'row' + i;
+	 row = new QRRow(element);
+	 row.name = 'row' + i;
 
-				//Add click row event
-				row.addEventListener('click', function(e) {
-					if (e.source.toString() == '[object TiUIButton]') {
-						return;
-					}
+	 //Add click row event
+	 row.addEventListener('click', function(e) {
+	 if (e.source.toString() == '[object TiUIButton]') {
+	 return;
+	 }
 
-					var result = new ResultWindow(e.rowData['itemData'], e.row);
-					self.openWindow(result);
-				});
+	 var result = new ResultWindow(e.rowData['itemData'], e.row);
+	 self.openWindow(result);
+	 });
 
-				historyRows.push(row);
+	 historyRows.push(row);
 
-				if (element['loved'] == 1) {
-					loveds.push(element);
-					lovedRows.push(row);
-				}
+	 if (element['loved'] == 1) {
+	 loveds.push(element);
+	 lovedRows.push(row);
+	 }
 
-				i++;
-				history_result.next();
-			}
-		} else {
-			history = [];
-			historyRows = [];
-			loveds = [];
-			lovedRows = [];
-		}
+	 i++;
+	 history_result.next();
+	 }
+	 } else {
+	 history = [];
+	 historyRows = [];
+	 loveds = [];
+	 lovedRows = [];
+	 }
 
-	}*/
-	
-	Ti.App.addEventListener('end_syncing',function(e){
+	 }*/
+
+	Ti.App.addEventListener('end_syncing', function(e) {
 		var changed_ids = e.changed_ids;
 		var insert_ids = e.insert_ids;
-		console.log('This time syncing changed '+changed_ids.length+' items and inserted '+insert_ids.length+' items.');
-		if (changed_ids.length+insert_ids.length > 0){
+		console.log('This time syncing changed ' + changed_ids.length + ' items and inserted ' + insert_ids.length + ' items.');
+		if (changed_ids.length + insert_ids.length > 0) {
 			// Do refresh only if there were something changed or inserted
 			var db = Ti.Database.open('qute');
 			// TODO:debug
-			changed_ids.forEach(function(element,key,array){
+			changed_ids.forEach(function(element, key, array) {
+				// TODO: can't find match
 				var at = historyIds.indexOf(element);
-				if (at >= 0){
-					Ti.API.info('found match at '+at+'. History item is '+history[at]);
+				if (at >= 0) {
+					Ti.API.info('found match at ' + at + '. History item is ' + history[at]);
 					historyRows[at].fireEvent('status_updated');
-					var newDataRow = db.execute('SELECT * FROM history WHERE id=?',element);
+					var newDataRow = db.execute('SELECT * FROM history WHERE id=?', element);
 					history[at] = dbRow2Array(newDataRow);
 					newDataRow = null;
 				} else {
 					Ti.API.info('Error? Can\'t found match');
 				}
 			});
-			
+
 			// Insert new rows
-			insert_ids.forEach(function(element,key,array){
-				var newDataRow = db.execute('SELECT * FROM history WHERE id=?',element);
+			insert_ids.forEach(function(element, key, array) {
+				var newDataRow = db.execute('SELECT * FROM history WHERE id=?', element);
 				var newRow = history.unshift(dbRow2Array(newDataRow));
 				historyIds.unshift(element);
 				historyRows.unshift(newRow);
 				newDataRow = null;
 				newRow = null;
 			});
-			
+
 			db.close();
 		}
 	});
@@ -941,10 +942,18 @@ function MainWindow() {
 	function deleteRow(itemId, row) {
 		//delete from db
 		var db = Ti.Database.open('qute');
-		var delete_item_result = db.execute('SELECT img,post_id,from_me FROM history WHERE id=?', itemId);
+		var delete_item_result = db.execute('SELECT img,post_id,from_me,sync_address FROM history WHERE id=?', itemId);
 		var img_url = delete_item_result.fieldByName('img');
 		var post_id = delete_item_result.fieldByName('post_id');
 		var from_me = delete_item_result.fieldByName('from_me');
+		
+		// Assign sync_key to identify shall not sync afterward
+		var sync_key = delete_item_result.fieldByName('sync_address');
+		if (sync_key == 'no') {
+			// fetch file name from image name
+			var img_name = img_url.split('Qute/')[1];
+			sync_key = img_name.split('.')[0];
+		}
 
 		if (post_id !== null && parseInt(post_id, 10) != -1 && parseInt(post_id, 10) != 0 && from_me) {
 			//the QR is exised in FB Qute
@@ -971,6 +980,8 @@ function MainWindow() {
 							Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory + img_url).deleteFile();
 
 							db.execute('DELETE FROM history WHERE id=?', itemId);
+							
+							db.execute('INSERT INTO _deleted (deleted_key) VALUES (?)',sync_key);
 
 							var deleted_row_index = historyRows.indexOf(row);
 
@@ -1044,6 +1055,7 @@ function MainWindow() {
 					Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory + img_url).deleteFile();
 
 					db.execute('DELETE FROM history WHERE id=?', itemId);
+					db.execute('INSERT INTO _deleted (deleted_key) VALUES (?)',sync_key);
 
 					var deleted_row_index = historyRows.indexOf(row);
 
@@ -1101,6 +1113,7 @@ function MainWindow() {
 			Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory + img_url).deleteFile();
 
 			db.execute('DELETE FROM history WHERE id=?', itemId);
+			db.execute('INSERT INTO _deleted (deleted_key) VALUES (?)',sync_key);
 
 			var deleted_row_index = historyRows.indexOf(row);
 
@@ -1238,7 +1251,7 @@ function MainWindow() {
 function db2array(rows) {
 	var returnArray = [];
 	var ids = [];
-	
+
 	var fieldCount;
 	//fieldCount is property in Android
 	if (Ti.Platform.name === 'android') {
@@ -1260,7 +1273,7 @@ function db2array(rows) {
 		rows.next();
 	}
 	//console.log(returnArray);
-	return [returnArray,ids];
+	return [returnArray, ids];
 }
 
 function dbRow2Array(row) {
@@ -1314,9 +1327,9 @@ function aspectFill(src, cw, ch) {
 	return ctn;
 }
 
-function getUniqueFileName(){
+function getUniqueFileName() {
 	var now = new Date();
-	var str = ''+now.getFullYear()+now.getMonth()+now.getDate()+now.getHours()+now.getMinutes()+now.getSeconds()+'';
+	var str = '' + now.getFullYear() + now.getMonth() + now.getDate() + now.getHours() + now.getMinutes() + now.getSeconds() + '';
 	return str;
 }
 

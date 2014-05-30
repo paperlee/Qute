@@ -40,8 +40,17 @@ function sync() {
 
 			rows.next();
 		}
+
+		var deleted_rows = db.execute('SELECT * FROM _deleted');
+		var deleted_keys = [];
+		while (deleted_rows.isValidRow()) {
+			deleted_keys.push(deleted_rows.fieldByName('deleted_key'));
+
+			deleted_rows.next();
+		}
+
 		db.close();
-		return [datas, data_keys];
+		return [datas, data_keys, deleted_keys];
 	};
 
 	var importOrExport = function() {
@@ -79,7 +88,8 @@ function sync() {
 				var datasAndKeys = getAllData();
 				var datas = datasAndKeys[0];
 				var data_keys = datasAndKeys[1];
-				
+				var deleted_keys = datasAndKeys[2];
+
 				// To store ids which were updated in db
 				var changed_ids = [];
 				var insert_ids = [];
@@ -99,87 +109,107 @@ function sync() {
 					console.log('Path: ' + element['path'] + ':: ID: ' + id + ':: at:' + at);
 					console.log(element['modified'] + ' = ' + (new Date(element['modified'])).getTime());
 					if (at < 0) {
-						
+
 						// Add one more obj that shall be completed
-						total_amount+=1;
+						total_amount += 1;
 
 						// Not existed in local. Download it
-						client.get(element['path'], {}, function(stat, reply, metadata) {
-							console.log('metadata:' + metadata);
-							var content = JSON.parse(reply);
-							if (content.title) {
-								var db = Ti.Database.open('qute');
-								db.execute('INSERT INTO history (title, date, qrtype, content, raw, img, loved, post_id, qute_link, last_update, last_sync, from_me, sync_address) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', content.title, content.date, content.qrtype, content.content, content.raw, content.img, content.loved, content.post_id, content.qute_link, content.last_update, content.last_sync, content.from_me, content.sync_address);
-								insert_ids.push(db.lastInsertRowId);
-								db.close();
-								var photo_path = JSON.parse(metadata)['path'].replace('Content', 'Photo');
-								photo_path = photo_path.replace('.json', '.png');
-								console.log('Photo path: ' + photo_path);
+						if (deleted_keys.indexOf(id) < 0) {
+							// Only if not exist in deleted_keys
+							client.get(element['path'], {}, function(stat, reply, metadata) {
+								console.log('metadata:' + metadata);
+								var content = JSON.parse(reply);
+								if (content.title) {
+									var db = Ti.Database.open('qute');
+									db.execute('INSERT INTO history (title, date, qrtype, content, raw, img, loved, post_id, qute_link, last_update, last_sync, from_me, sync_address) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', content.title, content.date, content.qrtype, content.content, content.raw, content.img, content.loved, content.post_id, content.qute_link, content.last_update, content.last_sync, content.from_me, content.sync_address);
+									insert_ids.push(db.lastInsertRowId);
+									db.close();
+									var photo_path = JSON.parse(metadata)['path'].replace('Content', 'Photo');
+									photo_path = photo_path.replace('.json', '.png');
+									console.log('Photo path: ' + photo_path);
 
-								// Make sure the Qute folder in local is created
-								var foldername = Ti.Filesystem.applicationDataDirectory + "Qute/";
-								var folder = Ti.Filesystem.getFile(foldername);
-								if (!folder.exists()) {
-									folder.createDirectory();
-								}
-
-								// media can't be get by get() method
-								/*client.get(photo_path, {}, function(stat, reply, metadata) {
-
-								//Save file to local storage
-								var img_name = JSON.parse(metadata)['path'].replace('/Photo','Qute'); // Get image file name
-								var filename = Ti.Filesystem.applicationDataDirectory + img_name;
-								var file = Ti.Filesystem.getFile(filename);
-								file.write(reply);
-								});*/
-
-								// Get photo's direct url and apply to imageView to store it
-								client.media(photo_path, {}, function(stat, reply) {
-
-									var pp = photo_path;
-									//Save file to local storage
-									var img_name = pp.replace('/Photo', 'Qute');
-									var local_img_path = Ti.Filesystem.applicationDataDirectory + img_name;
-									var file = Ti.Filesystem.getFile(local_img_path);
-									if (file.exists) {
-										file.deleteFile();
+									// Make sure the Qute folder in local is created
+									var foldername = Ti.Filesystem.applicationDataDirectory + "Qute/";
+									var folder = Ti.Filesystem.getFile(foldername);
+									if (!folder.exists()) {
+										folder.createDirectory();
 									}
 
-									var xhr = Ti.Network.createHTTPClient({
-										onload : function(e) {
-											file.write(this.responseData);
-											end_counter++;
-											Ti.API.info('Current end counter: ' + end_counter);
-											if (end_counter >= total_amount) {
-												Ti.API.info('Changed ids: '+changed_ids+"::Inserted ids: "+insert_ids);
-												Ti.App.fireEvent('end_syncing', {changed_ids:changed_ids,insert_ids:insert_ids});
-											}
-										},
-										onerror : function(e) {
-											console.log('Get image fail! ' + e.error);
-											end_counter++;
-											Ti.API.info('Current end counter: ' + end_counter);
-											if (end_counter >= total_amount) {
-												Ti.API.info('Changed ids: '+changed_ids+"::Inserted ids: "+insert_ids);
-												Ti.App.fireEvent('end_syncing', {changed_ids:changed_ids,insert_ids:insert_ids});
-											}
-											//TODO: More consitions to consider sync_done in HTTPClient?
-										},
-										timeout : 2 * 60000
+									// media can't be get by get() method
+									/*client.get(photo_path, {}, function(stat, reply, metadata) {
+
+									//Save file to local storage
+									var img_name = JSON.parse(metadata)['path'].replace('/Photo','Qute'); // Get image file name
+									var filename = Ti.Filesystem.applicationDataDirectory + img_name;
+									var file = Ti.Filesystem.getFile(filename);
+									file.write(reply);
+									});*/
+
+									// Get photo's direct url and apply to imageView to store it
+									client.media(photo_path, {}, function(stat, reply) {
+
+										var pp = photo_path;
+										//Save file to local storage
+										var img_name = pp.replace('/Photo', 'Qute');
+										var local_img_path = Ti.Filesystem.applicationDataDirectory + img_name;
+										var file = Ti.Filesystem.getFile(local_img_path);
+										if (file.exists) {
+											file.deleteFile();
+										}
+
+										var xhr = Ti.Network.createHTTPClient({
+											onload : function(e) {
+												file.write(this.responseData);
+												end_counter++;
+												Ti.API.info('Current end counter: ' + end_counter);
+												if (end_counter >= total_amount) {
+													Ti.API.info('Changed ids: ' + changed_ids + "::Inserted ids: " + insert_ids);
+													Ti.App.fireEvent('end_syncing', {
+														changed_ids : changed_ids,
+														insert_ids : insert_ids
+													});
+												}
+											},
+											onerror : function(e) {
+												console.log('Get image fail! ' + e.error);
+												end_counter++;
+												Ti.API.info('Current end counter: ' + end_counter);
+												if (end_counter >= total_amount) {
+													Ti.API.info('Changed ids: ' + changed_ids + "::Inserted ids: " + insert_ids);
+													Ti.App.fireEvent('end_syncing', {
+														changed_ids : changed_ids,
+														insert_ids : insert_ids
+													});
+												}
+												//TODO: More consitions to consider sync_done in HTTPClient?
+											},
+											timeout : 2 * 60000
+										});
+
+										xhr.open('GET', reply['url']);
+										xhr.send();
+
+										console.log('Img url is ' + reply['url'] + "::full path: " + pp);
+
+										//temp_img.addEventListener('load',saveImage);
+										//file.write(temp_img.toImage());
+
 									});
-
-									xhr.open('GET', reply['url']);
-									xhr.send();
-
-									console.log('Img url is ' + reply['url'] + "::full path: " + pp);
-
-									//temp_img.addEventListener('load',saveImage);
-									//file.write(temp_img.toImage());
-
+								}
+								//Ti.API.info('The file content: ' + JSON.parse(reply).title);
+							});
+						} else {
+							// The key matched something in deleted_id
+							end_counter++;
+							if (end_counter >= total_amount) {
+								Ti.API.info('Changed ids: ' + changed_ids + "::Inserted ids: " + insert_ids);
+								Ti.App.fireEvent('end_syncing', {
+									changed_ids : changed_ids,
+									insert_ids : insert_ids
 								});
 							}
-							//Ti.API.info('The file content: ' + JSON.parse(reply).title);
-						});
+						}
+
 					} else {
 						// File existed.
 						// 4. Check if dropbox_file_date >(newer) local_file_date? YES:get EQUAL:skip NO:upload(content)
@@ -188,7 +218,7 @@ function sync() {
 						// Do rest action only if there is related time flag
 						if (datas[at].last_sync && datas[at].last_update && element['modified']) {
 							console.log(element['modified'] + ' = ' + (new Date(element['modified'])).getTime());
-							
+
 							var dropbox_file_date = (new Date(element['modified'])).getTime();
 							var local_file_update_date = (new Date(datas[at].last_update)).getTime();
 							var local_file_sync_date = (new Date(datas[at].last_sync)).getTime();
@@ -255,8 +285,11 @@ function sync() {
 									end_counter++;
 									Ti.API.info('Current end counter: ' + end_counter);
 									if (end_counter >= total_amount) {
-										Ti.API.info('Changed ids: '+changed_ids+"::Inserted ids: "+insert_ids);
-										Ti.App.fireEvent('end_syncing', {changed_ids:changed_ids,insert_ids:insert_ids});
+										Ti.API.info('Changed ids: ' + changed_ids + "::Inserted ids: " + insert_ids);
+										Ti.App.fireEvent('end_syncing', {
+											changed_ids : changed_ids,
+											insert_ids : insert_ids
+										});
 									}
 									//Ti.API.info('The file content: ' + JSON.parse(reply).title);
 								});
@@ -283,8 +316,11 @@ function sync() {
 									end_counter++;
 									Ti.API.info('Current end counter: ' + end_counter);
 									if (end_counter >= total_amount) {
-										Ti.API.info('Changed ids: '+changed_ids+"::Inserted ids: "+insert_ids);
-										Ti.App.fireEvent('end_syncing', {changed_ids:changed_ids,insert_ids:insert_ids});
+										Ti.API.info('Changed ids: ' + changed_ids + "::Inserted ids: " + insert_ids);
+										Ti.App.fireEvent('end_syncing', {
+											changed_ids : changed_ids,
+											insert_ids : insert_ids
+										});
 									}
 								});
 
@@ -296,8 +332,11 @@ function sync() {
 								end_counter++;
 								Ti.API.info('Current end counter: ' + end_counter);
 								if (end_counter >= total_amount) {
-									Ti.API.info('Changed ids: '+changed_ids+"::Inserted ids: "+insert_ids);
-									Ti.App.fireEvent('end_syncing', {changed_ids:changed_ids,insert_ids:insert_ids});
+									Ti.API.info('Changed ids: ' + changed_ids + "::Inserted ids: " + insert_ids);
+									Ti.App.fireEvent('end_syncing', {
+										changed_ids : changed_ids,
+										insert_ids : insert_ids
+									});
 								}
 							}
 							// Kick out the handled obj
@@ -371,8 +410,11 @@ function sync() {
 								end_counter++;
 								Ti.API.info('Current end counter: ' + end_counter);
 								if (end_counter >= total_amount) {
-									Ti.API.info('Changed ids: '+changed_ids+"::Inserted ids: "+insert_ids);
-									Ti.App.fireEvent('end_syncing', {changed_ids:changed_ids,insert_ids:insert_ids});
+									Ti.API.info('Changed ids: ' + changed_ids + "::Inserted ids: " + insert_ids);
+									Ti.App.fireEvent('end_syncing', {
+										changed_ids : changed_ids,
+										insert_ids : insert_ids
+									});
 								}
 							});
 						}
@@ -433,7 +475,10 @@ function sync() {
 				end_counter++;
 				Ti.API.info('Current end counter: ' + end_counter);
 				if (end_counter >= rows_amount) {
-					Ti.App.fireEvent('end_syncing', {changed_ids:[],insert_ids:[]});
+					Ti.App.fireEvent('end_syncing', {
+						changed_ids : [],
+						insert_ids : []
+					});
 				}
 			});
 
@@ -470,7 +515,7 @@ function sync() {
 		loginAndSync : function() {
 			//TODO: add end_syncing event
 			Ti.App.fireEvent('start_syncing', {});
-			Ti.App.Properties.setString('latestSync',(new Date()).toISOString());
+			Ti.App.Properties.setString('latestSync', (new Date()).toISOString());
 			if (client.isAuthorized()) {
 				console.log('Already logged in');
 				//getDelta();
