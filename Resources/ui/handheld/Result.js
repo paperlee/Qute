@@ -375,7 +375,7 @@ function Result(qrData, qrRow) {
 		right : 0,
 		style : Ti.UI.iPhone.SystemButtonStyle.PLAIN
 	});
-
+	
 	//check if there is value in result
 	if (!qrData || typeof (qrData) === 'undefined') {
 		Ti.API.info('There is no result');
@@ -1112,14 +1112,14 @@ function Result(qrData, qrRow) {
 		rawLabel.visible = true;
 
 		title_area_height = readableTitle.toImage().height + rawLabel.toImage().height + 36 + 30;
-		Ti.API.info('show readable title and the height: ' + title_area_height);
+		//Ti.API.info('show readable title and the height: ' + title_area_height);
 	} else {
 		resultText.visible = true;
 		readableTitle.visible = false;
 		rawLabel.visible = false;
 
 		title_area_height = resultText.toImage().height + 36 + 30;
-		Ti.API.info('NOT show readable title and the height: ' + title_area_height);
+		//Ti.API.info('NOT show readable title and the height: ' + title_area_height);
 	};
 
 	//var title_area_height = resultText.toImage().height + 36 + 30;
@@ -1574,6 +1574,9 @@ function Result(qrData, qrRow) {
 
 	//TODO: require twice when go into Result
 	function checkThreadExist(fromSwitch, justIn) {
+		
+		var original_data = qrData;
+		
 		if (fromSwitch === null || fromSwitch === undefined) {
 			//default fromSwitch value
 			fromSwitch = false;
@@ -1625,6 +1628,7 @@ function Result(qrData, qrRow) {
 				var post_id;
 				//alert('success\n' + count);
 				//TODO:What if a thread has been remove(exited)? Exist->Other removed->NOT Exist?
+				// Nothing matched in FB
 				if (count == 0) {
 
 					//thread not exist, create one
@@ -1658,6 +1662,11 @@ function Result(qrData, qrRow) {
 						say.visible = false;
 						sendButton.visible = false;
 						cantSay.visible = true;
+						
+						if (original_data['post_id'] == post_id){
+							// Didn't change anything. abort without updating.
+							return;
+						}
 
 						var db = Ti.Database.open('qute');
 						//Update post_id and from_me?
@@ -1985,7 +1994,7 @@ function Result(qrData, qrRow) {
 								Ti.API.info('Name isn\'t found');
 							} else {
 								//name exist. check if different
-								Ti.API.info('Name is ' + commentsData['name']);
+								//Ti.API.info('Name is ' + commentsData['name']);
 								if (qrData['title'] != commentsData['name']) {
 									//different, need update!
 									Ti.API.info('Different! need update title field');
@@ -2007,8 +2016,8 @@ function Result(qrData, qrRow) {
 							}
 
 							//check if from_me
-							Ti.API.info("post from id is " + commentsData.from.id);
-							Ti.API.info("user id is " + fb.uid);
+							//Ti.API.info("post from id is " + commentsData.from.id);
+							//Ti.API.info("user id is " + fb.uid);
 							from_me = (commentsData.from.id == fb.uid);
 							if (qrData['from_me'] != from_me || need_update) {
 								//shall update from_me status
@@ -2155,8 +2164,7 @@ function Result(qrData, qrRow) {
 				cantSay.visible = true;
 
 				//loading.fireEvent('done');
-
-				// TODO:Parse the error type. e.code?
+				
 				// TODO: the error code for time out: 2
 				// TODO: Retry after timed out
 				switch(e.code) {
@@ -2179,7 +2187,7 @@ function Result(qrData, qrRow) {
 						}).show();
 						
 				}
-				Ti.API.info("["+e.code+"]"+e.error);
+				Ti.API.info(e.error + "["+e.code+"]");
 
 				//Attach tap twice hint
 				if (justIn && !Ti.App.Properties.getBool('didCopy')) {
