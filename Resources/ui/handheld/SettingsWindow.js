@@ -419,8 +419,7 @@ function SettingsWindow() {
 		height : 44,
 		selectionStyle : Ti.UI.iPhone.TableViewCellSelectionStyle.GRAY
 	});
-
-	//TODO: check if is syncing now and change the title of syncTitle
+	
 	var syncTitle = Ti.UI.createLabel({
 		font : {
 			fontSize : 16
@@ -428,6 +427,10 @@ function SettingsWindow() {
 		text : L('settings_title_sync'),
 		left : 12,
 		color : 'black'
+	});
+	// Show sync progress bar instead of spinning
+	var syncProgress = Ti.UI.createActivityIndicator({
+		style:Ti.UI.iPhone.ActivityIndicatorStyle.DARK
 	});
 	
 	var syncSwitch = Ti.UI.createSwitch({
@@ -437,6 +440,7 @@ function SettingsWindow() {
 	});
 
 	syncRow.add(syncTitle);
+	syncRow.add(syncProgress);
 	syncRow.add(syncSwitch);
 	syncRow.addEventListener('click',function(e){
 		//console.log('GoGoGo');
@@ -446,21 +450,26 @@ function SettingsWindow() {
 	});
 
 	settingsSection.add(syncRow);
-
-	/*Ti.App.addEventListener('dropbox_error', function(e) {
-	 client.login(function(options) {
-	 //console.log('Great! login done!'+options.toString());
-	 getDelta();
-
-	 });
-	 });*/
 	
 	// Listen start_syncing and end_syncing event to show syncing status
 	Ti.App.addEventListener('start_syncing',startSyncing);
 	
+	function showSyncProgress(e){
+		syncProgress.left = syncTitle.size.width + syncTitle.left + 10;
+		syncProgress.show();
+		try{
+			syncTitle.removeEventListener('postlayout',showSyncProgress);
+		}
+		catch(err){
+			Ti.API.info('Error to detach syncTitle listener: '+err);
+		}
+	}
+	
 	function startSyncing(e){
 		// Syncing started
 		syncTitle.text = L('settings_title_syncing');
+		syncTitle.addEventListener('postlayout',showSyncProgress);
+		
 		
 	}
 	
@@ -469,6 +478,7 @@ function SettingsWindow() {
 	function endSyncing(e){
 		// End syncing
 		syncTitle.text = L('settings_title_sync');
+		syncProgress.hide();
 	}
 	
 	syncSwitch.addEventListener('change', function(e) {

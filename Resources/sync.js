@@ -105,9 +105,9 @@ function sync() {
 					var id = id2.split('.')[0];
 
 					var at = data_keys.indexOf(id);
-					console.log('Rest datas amount: ' + data_keys.length);
+					//console.log('Rest datas amount: ' + data_keys.length);
 					console.log('Path: ' + element['path'] + ':: ID: ' + id + ':: at:' + at);
-					console.log(element['modified'] + ' = ' + (new Date(element['modified'])).getTime());
+					//console.log(element['modified'] + ' = ' + (new Date(element['modified'])).getTime());
 					if (at < 0) {
 
 						// Add one more obj that shall be completed
