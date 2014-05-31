@@ -81,6 +81,12 @@
 	<string name="confirm_title_create_post">仍然要將這個內容傳上Qute臉書專頁嗎？</string>
 	<string name="confirm_msg_create_post">這QR碼看起來不是單純的連結</string>
 	<string name="network_down">未連接到網路</string>
+	<string name="result_xhr_error_1_title">網路不通</string>
+	<string name="result_xhr_error_1_msg">檢查網路狀態並稍後試試</string>
+	<string name="result_xhr_error_2_title">連接逾時</string>
+	<string name="result_xhr_error_2_msg">檢查網路狀態並稍後試試</string>
+	<string name="result_xhr_error_others_title">無法連接</string>
+	<string name="result_xhr_error_others_msg">檢查網路狀態並稍後試試</string>
 	
 	<!-- Settings -->
 	<string name="window_title_settings">設定</string>

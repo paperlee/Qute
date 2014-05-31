@@ -528,7 +528,7 @@ function Result(qrData, qrRow) {
 	if (qrData.qrtype === 0) {
 		//HTTP type
 		buttonOpenInSafari.enabled = true;
-		
+
 		//console.log('title = raw?:'+(qrData['title'] == qrData['raw'])+'::'+qrData['title'] + '::'+qrData['raw']);
 		// Try to get website title
 		if (qrData['title'] == qrData['raw']) {
@@ -539,7 +539,7 @@ function Result(qrData, qrRow) {
 					var matches = this.responseText.match(/<title>(.*?)<\/title>/gi);
 					if (matches != null) {
 						//console.log('found title:'+matches[0]);
-						var title_string = matches[0].substring(7,matches[0].length-8);
+						var title_string = matches[0].substring(7, matches[0].length - 8);
 						// Assign back title to db
 						qrData['title'] = title_string;
 						var db = Ti.Database.open('qute');
@@ -566,20 +566,20 @@ function Result(qrData, qrRow) {
 				},
 				timeout : 5000
 			});
-			
+
 			//TODO:shorten url may fail
-			
+
 			var url;
-			if (qrData['raw'].search(patt_http) < 0){
+			if (qrData['raw'].search(patt_http) < 0) {
 				// need to add http at beginning
-				url = 'http://'+qrData['raw'];
+				url = 'http://' + qrData['raw'];
 			} else {
 				url = qrData['raw'];
 			}
-			
-			console.log('request url '+url);
-			
-			httpRequest.open('GET',url);
+
+			console.log('request url ' + url);
+
+			httpRequest.open('GET', url);
 			httpRequest.send();
 		}
 
@@ -2156,7 +2156,30 @@ function Result(qrData, qrRow) {
 
 				//loading.fireEvent('done');
 
-				alert(e.error);
+				// TODO:Parse the error type. e.code?
+				// TODO: the error code for time out: 2
+				// TODO: Retry after timed out
+				switch(e.code) {
+					case 1:
+						Ti.UI.createAlertDialog({
+							title : L('result_xhr_error_1_title'),
+							message : L('result_xhr_error_1_msg')
+						}).show();
+						break;
+					case 2:
+						Ti.UI.createAlertDialog({
+							title : L('result_xhr_error_2_title'),
+							message : L('result_xhr_error_2_msg')
+						}).show();
+						break;
+					default:
+						Ti.UI.createAlertDialog({
+							title:L('result_xhr_error_others_title'),
+							message:L('result_xhr_error_others_msg')
+						}).show();
+						
+				}
+				Ti.API.info("["+e.code+"]"+e.error);
 
 				//Attach tap twice hint
 				if (justIn && !Ti.App.Properties.getBool('didCopy')) {
@@ -2164,6 +2187,9 @@ function Result(qrData, qrRow) {
 					self.add(tapTwiceHint);
 					tapTwiceHint.top = picFrame.toImage().height - tapTwiceHint.toImage().height - MARGIN_HINT_BOTTOM;
 				}
+
+				// To avoid duplicated response
+				client = null;
 			},
 			timeout : 5000
 		});

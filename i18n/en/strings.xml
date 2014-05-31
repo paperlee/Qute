@@ -81,6 +81,12 @@
 	<string name="confirm_title_create_post">Publish it in Qute fanpage?</string>
 	<string name="confirm_msg_create_post">The scan result looks not like a link.</string>
 	<string name="network_down">Internet disconnected</string>
+	<string name="result_xhr_error_1_title">Internet Unavailable</string>
+	<string name="result_xhr_error_1_msg">Check network status and try agian.</string>
+	<string name="result_xhr_error_2_title">Connection Timed Out</string>
+	<string name="result_xhr_error_2_msg">Check network status and try agian.</string>
+	<string name="result_xhr_error_others_title">Connection Fail</string>
+	<string name="result_xhr_error_others_msg">Check network status and try agian.</string>
 	
 	<!-- Settings -->
 	<string name="window_title_settings">Settings</string>

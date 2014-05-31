@@ -282,8 +282,6 @@ function MainWindow() {
 					newRow = null;
 					//Update table after showing result page
 					//updateTable(newQR);
-
-					//TODO:update the main table when do changes in Result page
 				}
 			},
 			cancel : function() {

@@ -81,6 +81,12 @@
 	<string name="confirm_title_create_post">仍然要将这个内容传上Qute脸书专页吗？</string>
 	<string name="confirm_msg_create_post">这QR码看起来不是单纯的连结</string>
 	<string name="network_down">未连接到网路</string>
+	<string name="result_xhr_error_1_title">网路不通</string>
+	<string name="result_xhr_error_1_msg">检查网路状态并稍后试试</string>
+	<string name="result_xhr_error_2_title">连接逾时</string>
+	<string name="result_xhr_error_2_msg">检查网路状态并稍后试试</string>
+	<string name="result_xhr_error_others_title">无法连接</string>
+	<string name="result_xhr_error_others_msg">检查网路状态并稍后试试</string>
 	
 	<!-- Settings -->
 	<string name="window_title_settings">设定</string>

@@ -226,35 +226,6 @@ function aspectFill(src, cw, ch) {
 	return ctn;
 }
 
-function parseDate(myDate) {
-	var parts, date, time, dt, ms;
-
-	parts = myDate.split(/[T ]/);
-	// Split on `T` or a space to get date and time
-	date = parts[0];
-	time = parts[1];
-
-	dt = new Date();
-
-	parts = date.split(/[-\/]/);
-	// Split date on - or /
-	dt.setFullYear(parseInt(parts[0], 10));
-	dt.setMonth(parseInt(parts[1], 10) - 1);
-	// Months start at 0 in JS
-	dt.setDate(parseInt(parts[2], 10));
-
-	parts = time.split(/:/);
-	// Split time on :
-	dt.setHours(parseInt(parts[0], 10));
-	dt.setMinutes(parseInt(parts[1], 10));
-	dt.setSeconds(parseInt(parts[2], 10));
-
-	//ms = dt.getTime();
-	//return ms;
-
-	return dt;
-}
-
 function dbRow2Array(row){
 	var fieldCount;
 	if (Ti.Platform.name === 'android'){
