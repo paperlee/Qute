@@ -844,12 +844,32 @@ function MainWindow() {
 			// Insert new rows
 			insert_ids.forEach(function(element, key, array) {
 				var newDataRow = db.execute('SELECT * FROM history WHERE id=?', element);
-				var newRow = history.unshift(dbRow2Array(newDataRow));
+				var newData = dbRow2Array(newDataRow);
+				var newRow = new QRRow(newData);
+				
+				//Add click row event
+				newRow.addEventListener('click', function(e) {
+					if (e.source.toString() == '[object TiUIButton]') {
+						return;
+					}
+
+					var result = new ResultWindow(e.rowData['itemData'], e.row);
+					self.openWindow(result);
+				});
+				
+				history.unshift(newData);
 				historyIds.unshift(element);
 				historyRows.unshift(newRow);
+				
 				newDataRow = null;
 				newRow = null;
 			});
+
+			if (insert_ids.length > 0) {
+				// TODO: Listener not work after refreshTable!! (updateSection)
+				refreshTable(segmenterIndex);
+
+			}
 
 			db.close();
 		}
@@ -944,7 +964,7 @@ function MainWindow() {
 		var img_url = delete_item_result.fieldByName('img');
 		var post_id = delete_item_result.fieldByName('post_id');
 		var from_me = delete_item_result.fieldByName('from_me');
-		
+
 		// Assign sync_key to identify shall not sync afterward
 		var sync_key = delete_item_result.fieldByName('sync_address');
 		if (sync_key == 'no') {
@@ -978,8 +998,8 @@ function MainWindow() {
 							Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory + img_url).deleteFile();
 
 							db.execute('DELETE FROM history WHERE id=?', itemId);
-							
-							db.execute('INSERT INTO _deleted (deleted_key) VALUES (?)',sync_key);
+
+							db.execute('INSERT INTO _deleted (deleted_key) VALUES (?)', sync_key);
 
 							var deleted_row_index = historyRows.indexOf(row);
 
@@ -1053,7 +1073,7 @@ function MainWindow() {
 					Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory + img_url).deleteFile();
 
 					db.execute('DELETE FROM history WHERE id=?', itemId);
-					db.execute('INSERT INTO _deleted (deleted_key) VALUES (?)',sync_key);
+					db.execute('INSERT INTO _deleted (deleted_key) VALUES (?)', sync_key);
 
 					var deleted_row_index = historyRows.indexOf(row);
 
@@ -1111,7 +1131,7 @@ function MainWindow() {
 			Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory + img_url).deleteFile();
 
 			db.execute('DELETE FROM history WHERE id=?', itemId);
-			db.execute('INSERT INTO _deleted (deleted_key) VALUES (?)',sync_key);
+			db.execute('INSERT INTO _deleted (deleted_key) VALUES (?)', sync_key);
 
 			var deleted_row_index = historyRows.indexOf(row);
 
@@ -1194,6 +1214,8 @@ function MainWindow() {
 	}
 
 	function updateTable(newData) {
+		// TODO: Bug!! Can't add new row after sync(downloaded N QR from dropbox)
+
 		//Add new scanned row into table
 		var row = new QRRow(newData);
 
@@ -1209,7 +1231,7 @@ function MainWindow() {
 
 		table.insertRowBefore(0, row);
 
-		segmenterHeader = table.sections[1];
+		//segmenterHeader = table.sections[1];
 
 		if (hasExtraSpace) {
 			segmenterHeader.remove(segmenterHeader.rows[segmenterHeader.rows.length - 1]);
