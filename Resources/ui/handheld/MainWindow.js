@@ -272,9 +272,22 @@ function MainWindow() {
 
 					temp = null;
 
-					var newRow = updateTable(newQR);
-					historyRows.unshift(newRow);
+					//var newRow = updateTable(newQR);
+					var newRow = new QRRow(newQR);
+					//Add click row event
+					newRow.addEventListener('click', function(e) {
+						if (e.source.toString() == '[object TiUIButton]') {
+							return;
+						}
 
+						var result = new ResultWindow(e.rowData['itemData'], e.row);
+						self.openWindow(result);
+					});
+					
+					historyRows.unshift(newRow);
+					
+					refreshTable(segmenterIndex);
+					
 					//show result page
 					var result = new ResultWindow(newQR, newRow);
 					self.openWindow(result);
@@ -846,7 +859,7 @@ function MainWindow() {
 				var newDataRow = db.execute('SELECT * FROM history WHERE id=?', element);
 				var newData = dbRow2Array(newDataRow);
 				var newRow = new QRRow(newData);
-				
+
 				//Add click row event
 				newRow.addEventListener('click', function(e) {
 					if (e.source.toString() == '[object TiUIButton]') {
@@ -856,11 +869,11 @@ function MainWindow() {
 					var result = new ResultWindow(e.rowData['itemData'], e.row);
 					self.openWindow(result);
 				});
-				
+
 				history.unshift(newData);
 				historyIds.unshift(element);
 				historyRows.unshift(newRow);
-				
+
 				newDataRow = null;
 				newRow = null;
 			});

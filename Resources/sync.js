@@ -168,6 +168,12 @@ function sync() {
 														changed_ids : changed_ids,
 														insert_ids : insert_ids
 													});
+												} else {
+													// To share current sync progress
+													Ti.App.fireEvent('sync_progress_changed', {
+														now : end_counter,
+														all : total_amount
+													});
 												}
 											},
 											onerror : function(e) {
@@ -179,6 +185,11 @@ function sync() {
 													Ti.App.fireEvent('end_syncing', {
 														changed_ids : changed_ids,
 														insert_ids : insert_ids
+													});
+												} else {
+													Ti.App.fireEvent('sync_progress_changed', {
+														now : end_counter,
+														all : total_amount
 													});
 												}
 												//TODO: More consitions to consider sync_done in HTTPClient?
@@ -206,6 +217,11 @@ function sync() {
 								Ti.App.fireEvent('end_syncing', {
 									changed_ids : changed_ids,
 									insert_ids : insert_ids
+								});
+							} else {
+								Ti.App.fireEvent('sync_progress_changed', {
+									now : end_counter,
+									all : total_amount
 								});
 							}
 						}
@@ -290,6 +306,11 @@ function sync() {
 											changed_ids : changed_ids,
 											insert_ids : insert_ids
 										});
+									} else {
+										Ti.App.fireEvent('sync_progress_changed', {
+											now : end_counter,
+											all : total_amount
+										});
 									}
 									//Ti.API.info('The file content: ' + JSON.parse(reply).title);
 								});
@@ -321,6 +342,11 @@ function sync() {
 											changed_ids : changed_ids,
 											insert_ids : insert_ids
 										});
+									} else {
+										Ti.App.fireEvent('sync_progress_changed', {
+											now : end_counter,
+											all : total_amount
+										});
 									}
 								});
 
@@ -336,6 +362,11 @@ function sync() {
 									Ti.App.fireEvent('end_syncing', {
 										changed_ids : changed_ids,
 										insert_ids : insert_ids
+									});
+								} else {
+									Ti.App.fireEvent('sync_progress_changed', {
+										now : end_counter,
+										all : total_amount
 									});
 								}
 							}
@@ -415,6 +446,11 @@ function sync() {
 										changed_ids : changed_ids,
 										insert_ids : insert_ids
 									});
+								} else {
+									Ti.App.fireEvent('sync_progress_changed', {
+										now : end_counter,
+										all : total_amount
+									});
 								}
 							});
 						}
@@ -478,6 +514,11 @@ function sync() {
 					Ti.App.fireEvent('end_syncing', {
 						changed_ids : [],
 						insert_ids : []
+					});
+				} else {
+					Ti.App.fireEvent('sync_progress_changed', {
+						now : end_counter,
+						all : rows_amount
 					});
 				}
 			});

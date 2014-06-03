@@ -262,7 +262,8 @@ function Result(qrData, qrRow) {
 	//pull down instruction
 	var pullDownInstructionView = Ti.UI.createView({
 		width : 320,
-		height : 44
+		height : 44,
+		backgroundColor:'#00000000'
 	});
 
 	var guideTopBg = Ti.UI.createView({

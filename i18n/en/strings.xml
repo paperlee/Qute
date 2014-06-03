@@ -103,6 +103,7 @@
 	<string name="settings_title_language">Language</string>
 	<string name="settings_title_sync">Sync</string>
 	<string name="settings_title_syncing">Syncing...</string>
+	<string name="settings_title_syncing_progress">Syncing</string>
 	<string name="settings_power_by">Powered by</string>
 	<string name="settings_latest_sync">Latest sync at </string>
 	<string name="settings_last_sync_never">Never</string>
