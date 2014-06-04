@@ -960,6 +960,8 @@ function Result(qrData, qrRow) {
 		//				+'+AND+strpos(message,\''+encodeURIComponent(data.barcode)+'\')=0)' + '&access_token=' + fb.accessToken;
 		Ti.API.info('Checked loggedin status');
 		if (Ti.Network.online) {
+			Ti.API.info('fb.loggedIn:'+fb.loggedIn+'::access_token:'+fb.accessToken);
+			//if (fb.accessToken)
 			checkThreadExist(false, true);
 		} else {
 			//Network is down
@@ -1312,8 +1314,8 @@ function Result(qrData, qrRow) {
 	whyLabel.addEventListener('click', function(e) {
 		var whyWin = new WhyWindow();
 	});
-
-	buttonFb.addEventListener('click', function(e) {
+	
+	var goLoginFB = function(e){
 		//login in fb
 		fb.appid = FACEBOOK_APP_ID;
 		fb.permissions = ['publish_actions', 'publish_stream', 'read_stream'];
@@ -1336,7 +1338,9 @@ function Result(qrData, qrRow) {
 			}
 		});
 		fb.authorize();
-	});
+	};
+
+	buttonFb.addEventListener('click', goLoginFB);
 
 	var hintToLogInBox = Ti.UI.createView({
 		width : Ti.UI.FILL,
@@ -1370,7 +1374,7 @@ function Result(qrData, qrRow) {
 		top : 0,
 		bottom : 0,
 		sections : [blankSpaceHeader, sayPanelHeader],
-		backgroundColor : '#00ffffff',
+		backgroundColor : '#00000000',
 		scrollsToTop : true,
 		separatorStyle : Ti.UI.iPhone.TableViewCellSelectionStyle.NONE,
 		headerPullView : pullDownInstructionView
@@ -1616,6 +1620,7 @@ function Result(qrData, qrRow) {
 
 		// note: fql have to be in unicode encode and > is %3E
 		var query_url = 'https://graph.facebook.com/' + 'fql?q=' + 'SELECT+post_id+FROM+stream+WHERE+source_id=368537286624382' + '+AND+strpos(message,%27' + encodeURIComponent(qrData['raw']) + '%27)%3E=0' + '&access_token=' + fb.accessToken;
+		console.log('Query URL is '+query_url);
 		//alert(query_url);
 		//Ti.UI.Clipboard.setText(query_url);
 		//TODO: request timeout may cause duplicated http request. Didn't clean client?
@@ -2187,7 +2192,7 @@ function Result(qrData, qrRow) {
 						break;
 					default:
 						Ti.UI.createAlertDialog({
-							title:L('result_xhr_error_others_title'),
+							title:L('result_xhr_error_others_title')+'['+e.code+']',
 							message:L('result_xhr_error_others_msg')
 						}).show();
 						

@@ -614,7 +614,7 @@ function SettingsWindow() {
 	});
 
 	var tweetMeLabel = Ti.UI.createLabel({
-		text : '@paperli',
+		text : '@qute_scanner',
 		color : COLOR_PURPLE,
 		font : {
 			fontSize : 16,
@@ -623,8 +623,8 @@ function SettingsWindow() {
 	});
 
 	tweetMeRow.addEventListener('click', function(e) {
-		if (!Ti.Platform.openURL('twitter://user?screen_name=paperli')) {
-			Ti.Platform.openURL('http://twitter.com/paperli');
+		if (!Ti.Platform.openURL('twitter://user?screen_name=qute_scanner')) {
+			Ti.Platform.openURL('http://twitter.com/qute_scanner');
 		}
 	});
 
@@ -645,7 +645,7 @@ function SettingsWindow() {
 	});
 
 	var emailMeLabel = Ti.UI.createLabel({
-		text : 'paper.li@gmail.com',
+		text : 'paper.li+qute@gmail.com',
 		color : COLOR_PURPLE,
 		font : {
 			fontSize : 16,
@@ -657,7 +657,7 @@ function SettingsWindow() {
 		var emailDialog = Ti.UI.createEmailDialog({
 			subject : L('email_subject'),
 			messageBody : L('email_body'),
-			toRecipients : ['paper.li@gmail.com']
+			toRecipients : ['paper.li+qute@gmail.com']
 		});
 		emailDialog.open();
 	});

@@ -21,6 +21,8 @@
 	<string name="confirm_title_delete_from_fb">同时删掉脸书上的讨论列吗？</string>
 	<string name="toast_deleted_from_fb">在脸书上已成功删除</string>
 	<string name="alert_cant_delete_fb">无法删除脸书上的讨论列。请等下再试一次</string>
+	<string name="alert_relogin_fb_title">无法连结Facebook帐号</string>
+	<string name="alert_relogin_fb_msg">请重新登入</string>
 	
 	<!-- LoadingWidget -->
 	<string name="button_title_login_fb">使用Facebook登入</string>

@@ -21,6 +21,8 @@
 	<string name="confirm_title_delete_from_fb">You own the post. Delete it from Qute as well?</string>
 	<string name="toast_deleted_from_fb">Deleted from Facebook</string>
 	<string name="alert_cant_delete_fb">Can\'t delete the post in Facebook. Please try again later.</string>
+	<string name="alert_relogin_fb_title">Missing Facebook connection</string>
+	<string name="alert_relogin_fb_msg">Please relogin your facebook account.</string>
 	
 	<!-- LoadingWidget -->
 	<string name="button_title_login_fb">Login Facebook</string>

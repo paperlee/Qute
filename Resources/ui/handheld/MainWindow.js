@@ -52,6 +52,7 @@ var fb = require('facebook');
 var Toast = require('ui/handheld/iToast');
 var Loading = require('ui/handheld/iLoading');
 var SettingsWindow = require('ui/handheld/SettingsWindow');
+var Keys = require('keys');
 //var Login = require('ui/handheld/Login');
 
 var QRRow = require('ui/handheld/QRRow');
@@ -675,6 +676,7 @@ function MainWindow() {
 		Ti.API.info('Deleted item at ' + e.rowData['itemId']);
 		deleteRow(e.rowData['itemId'], e.row);
 		//TODO:delete from local array
+		
 	});
 
 	table.addEventListener('scroll', function(e) {
@@ -726,7 +728,34 @@ function MainWindow() {
 	self.window = loginWin;
 	//self.openWindow(loginWin);
 	}*/
+	
+	var reLoginFB = function(){
+		var keys = new Keys();
+		//login in fb
+		fb.appid = keys.facebook_appid;
+		fb.permissions = ['publish_actions', 'publish_stream', 'read_stream'];
 
+		fb.forceDialogAuth = true;
+		fb.addEventListener('login', function(e) {
+			if (e.success) {
+				// hide login widget in MainWindow
+				//Ti.App.fireEvent('loggedin');
+				
+				Ti.App.Properties.setBool('loggedin',true);
+				
+				//descriptionView.remove(hintToLogInBox);
+				//checkThreadExist(false);
+				
+			} else if (e.error) {
+				alert(e.error);
+			} else if (e.cancelled) {
+				alert('Cancelled');
+			}
+		});
+		keys = null;
+		fb.authorize();
+	};
+	
 	//The login widget box. Check network status, check login status and skipped
 	if (fb.loggedIn) {
 		//Not online or logged in or skipped
@@ -779,6 +808,38 @@ function MainWindow() {
 				//Ti.API.info('LOGGED IN REMOVE WIDGET');
 				main.remove(loginWidget);
 			});
+		} else {
+			// User logged in fb once, but unknown reason he/she was logged out
+			// Do re-login
+			if (Ti.Network.online){
+				Ti.API.info('Go relogin fb');
+				Ti.UI.createAlertDialog({
+					title:L('alert_relogin_fb_title'),
+					message:L('alert_relogin_fb_msg')
+				}).show();
+				
+				/*var confirmRelogin = Ti.UI.createOptionDialog({
+					title:L('confirm_relogin_title'),
+					options:[L('confirm_relogin_ok'),L('confirm_relogin_cancel')],
+					cancel:1
+				});
+				
+				confirmRelogin.addEventListener('click',function(e){
+					if (e.index == 0){
+						// Go relogin
+						reLoginFB();
+					} else {
+						// Cancel relogin
+						Ti.App.Properties.setBool('loggedin',false);
+					}
+				});
+				
+				confirmRelogin.show();*/
+				// Will reset the boolean to true after reloggedin
+				Ti.App.Properties.setBool('loggedin',false);
+				reLoginFB();
+				//Ti.App.Properties.setBool('loggedin',false);
+			}
 		}
 	}
 
@@ -1141,8 +1202,11 @@ function MainWindow() {
 				}
 			});
 		} else {
+			Ti.API.info('Deleting row at '+itemId);
 			//Delete local db and img
 			Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory + img_url).deleteFile();
+			
+			Ti.API.info('22 Deleting row at '+itemId);
 
 			db.execute('DELETE FROM history WHERE id=?', itemId);
 			db.execute('INSERT INTO _deleted (deleted_key) VALUES (?)', sync_key);
