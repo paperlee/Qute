@@ -14,6 +14,7 @@ var dropbox = require('dropbox');
 var cookiejar = require('com.kosso.cookiejar');
 
 var Sync = require('sync');
+var Toast = require('ui/handheld/iToast');
 
 var URL_QUTE = 'https://www.facebook.com/pages/Qute/368537286624382';
 
@@ -528,33 +529,27 @@ function SettingsWindow() {
 		syncProgress.hide();
 		syncProgressBar.hide();
 	}
-
+	
+	function dropboxLoginFailHandler(e){
+		Ti.API.info('!!fail to login!!');
+		Ti.App.fireEvent('end_syncing',{changed_ids:[],insert_ids:[]});
+		syncSwitch.value = false;
+		Ti.App.removeEventListener('dropbox_login_fail',dropboxLoginFailHandler);
+		var toast = new Toast(L('toast_dropbox_login_fail'),2000);
+		main.add(toast);
+	}
 
 	syncSwitch.addEventListener('change', function(e) {
 		if (e.value) {
 			console.log('Start connecting to Dropbox');
 			// Try modulized sync functions
 			sync.loginAndSync();
-
-			/*if (client.isAuthorized()) {
-			 console.log('Already logged in');
-			 //getDelta();
-			 doSync();
-			 } else {
-			 console.log('Go logging in');
-			 client.login(function(options) {
-			 Ti.App.Properties.setBool('syncing', true);
-			 console.log('Great! login done!' + options.toString());
-			 console.log('syncing: ' + Ti.App.Properties.getBool('syncing'));
-			 //getDelta();
-			 doSync();
-			 });
-			 }*/
+			Ti.App.addEventListener('dropbox_login_fail',dropboxLoginFailHandler);
 		} else {
 			// do logout
 			// Try modulized sync functions
 			sync.logout();
-
+			
 			//logout();
 		}
 	});
@@ -723,6 +718,7 @@ function SettingsWindow() {
 		Ti.App.removeEventListener('end_syncing', endSyncing);
 		Ti.App.removeEventListener('end_syncing', reapplyLatestSyncDate);
 		Ti.App.removeEventListener('sync_progress_changed', changeSyncProgress);
+		Ti.App.removeEventListener('dropbox_login_fail',dropboxLoginFailHandler);
 	});
 
 	btnClose.addEventListener('click', function(e) {

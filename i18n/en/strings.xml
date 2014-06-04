@@ -107,6 +107,7 @@
 	<string name="settings_power_by">Powered by</string>
 	<string name="settings_latest_sync">Latest sync at </string>
 	<string name="settings_last_sync_never">Never</string>
+	<string name="toast_dropbox_login_fail">Fails to authorize in Dropbox</string>
 	
 	<!-- Toast -->
 	<string name="toast_placeholder">Well...What\'s the message?</string>

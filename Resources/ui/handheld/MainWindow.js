@@ -135,17 +135,17 @@ function MainWindow() {
 				symbol : {
 					"QR-Code" : true,
 					"PDF417" : true,
-					"CODE-128" : false,
-					"CODE-39" : false,
-					"I25" : false,
-					"DataBar" : false,
-					"DataBar-Exp" : false,
-					"EAN-13" : false,
-					"EAN-8" : false,
-					"UPC-A" : false,
-					"UPC-E" : false,
-					"ISBN-13" : false,
-					"ISBN-10" : false
+					"CODE-128" : true,
+					"CODE-39" : true,
+					"I25" : true,
+					"DataBar" : true,
+					"DataBar-Exp" : true,
+					"EAN-13" : true,
+					"EAN-8" : true,
+					"UPC-A" : true,
+					"UPC-E" : true,
+					"ISBN-13" : true,
+					"ISBN-10" : true
 				}
 			},
 			success : function(data) {

@@ -1324,6 +1324,8 @@ function Result(qrData, qrRow) {
 				// hide login widget in MainWindow
 				Ti.App.fireEvent('loggedin');
 				
+				Ti.App.Properties.setBool('loggedin',true);
+				
 				descriptionView.remove(hintToLogInBox);
 				checkThreadExist(false);
 				

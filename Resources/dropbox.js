@@ -95,7 +95,7 @@ exports.createClient = function(config) {
 		var token, that = this;
 
 		var raw = Ti.App.Properties.getString('DROPBOX_TOKENS');
-		if (raw == null){
+		if (raw == null) {
 			// DROPBOX_TOKENS not available. Update the local token
 			that.accessToken = null;
 			that.accessTokenSecret = null;
@@ -149,12 +149,12 @@ exports.createClient = function(config) {
 					//Ti.API.info(this.responseText);
 				}
 				callback(null, this, this.responseText);
-				
+
 			},
 			onerror : function() {
 				Ti.API.error(' FAILED to send a request!');
 				Ti.API.info(this.responseText);
-				Ti.App.fireEvent('dropbox_error',{});
+				Ti.App.fireEvent('dropbox_error', {});
 			}
 		});
 
@@ -187,14 +187,22 @@ exports.createClient = function(config) {
 
 				var authorizeUICallback = function(e) {
 					var url = Ti.App.getArguments().url;
-					console.log('current url: '+url);
+					console.log('current url: ' + url);
 					
+					//var that = this;
+					
+					if (url === undefined) {
+						// User may come back manually.
+						Ti.App.fireEvent('dropbox_login_fail');
+						return;
+					}
+
 					if (url.indexOf('?oauth_token') != -1) {
 						var url_parts = url.split("?");
 						var tokens = url_parts[1].split('&');
 						ACCESS_TOKEN_SECRET = tokens[1].split("=")[1];
-						
-						console.log('in case1: '+ACCESS_TOKEN_SECRET);
+
+						console.log('in case1: ' + ACCESS_TOKEN_SECRET);
 
 						destroyAuthorizeUI();
 						var options = {
@@ -220,9 +228,15 @@ exports.createClient = function(config) {
 
 					} else if ('https://www.dropbox.com/' === url) {
 						destroyAuthorizeUI();
+						Ti.App.fireEvent('dropbox_login_fail');
 						return;
 					} else if (url.indexOf('#error=access_denied') != -1) {
 						destroyAuthorizeUI();
+						Ti.App.fireEvent('dropbox_login_fail');
+						return;
+					} else if (url.indexOf('?not_approved') != -1){
+						destroyAuthorizeUI();
+						Ti.App.fireEvent('dropbox_login_fail');
 						return;
 					}
 				};
@@ -230,52 +244,52 @@ exports.createClient = function(config) {
 				var destroyAuthorizeUI = function() {
 					// if the window doesn't exist, exit
 					/*if (window == null) {
-						return;
-					}
-					// remove the UI
-					try {
-						wv.removeEventListener('load', authorizeUICallback);
-						window.close();
-						loading = null;
-						wv = null;
-						window = null;
-					} catch (ex) {
-						Ti.API.debug('Cannot destroy the authorize UI. Ignoring.');
-					}*/
+					 return;
+					 }
+					 // remove the UI
+					 try {
+					 wv.removeEventListener('load', authorizeUICallback);
+					 window.close();
+					 loading = null;
+					 wv = null;
+					 window = null;
+					 } catch (ex) {
+					 Ti.API.debug('Cannot destroy the authorize UI. Ignoring.');
+					 }*/
 				};
-				
+
 				// Jump to Dropbox web to do authorization
 				Ti.Platform.openURL('https://www.dropbox.com/1/oauth/authorize?oauth_token=' + reply.oauth_token + '&oauth_callback=fb614174031953325://settings');
 				//authorizeUICallback();
-				
-				Ti.App.addEventListener('resumed',authorizeUICallback);
-				
+
+				Ti.App.addEventListener('resumed', authorizeUICallback);
+
 				/*var wv = Ti.UI.createWebView({
-					url : 'https://www.dropbox.com/1/oauth/authorize?oauth_token=' + reply.oauth_token + '&oauth_callback=http://www.clearlyinnovative.com/oAuth.html'
-				});
+				 url : 'https://www.dropbox.com/1/oauth/authorize?oauth_token=' + reply.oauth_token + '&oauth_callback=http://www.clearlyinnovative.com/oAuth.html'
+				 });
 
-				wv.addEventListener('load', authorizeUICallback);
+				 wv.addEventListener('load', authorizeUICallback);
 
-				var window = Ti.UI.createWindow({
-					backgroundColor : 'transparent',
-					modal : true,
-					navBarHidden : false
-				});
+				 var window = Ti.UI.createWindow({
+				 backgroundColor : 'transparent',
+				 modal : true,
+				 navBarHidden : false
+				 });
 
-				var navWin = Ti.UI.iOS.createNavigationWindow({
-					tintColor : COLOR_PURPLE,
-					backgroundColor : 'white',
-					modal : true,
-					window : window
-				});
+				 var navWin = Ti.UI.iOS.createNavigationWindow({
+				 tintColor : COLOR_PURPLE,
+				 backgroundColor : 'white',
+				 modal : true,
+				 window : window
+				 });
 
-				window.add(wv);
-				//window.open();
-				navWin.open({
-					modal : true,
-					modalTransitionStyle : Ti.UI.iPhone.MODAL_TRANSITION_STYLE_COVER_VERTICAL,
-					modalStyle : Ti.UI.iPhone.MODAL_PRESENTATION_CURRENT_CONTEXT
-				});*/
+				 window.add(wv);
+				 //window.open();
+				 navWin.open({
+				 modal : true,
+				 modalTransitionStyle : Ti.UI.iPhone.MODAL_TRANSITION_STYLE_COVER_VERTICAL,
+				 modalStyle : Ti.UI.iPhone.MODAL_PRESENTATION_CURRENT_CONTEXT
+				 });*/
 			});
 		},
 
@@ -706,4 +720,4 @@ exports.createClient = function(config) {
 			});
 		}
 	};
-}; 
+};

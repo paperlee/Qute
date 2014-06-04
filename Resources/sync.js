@@ -541,7 +541,7 @@ function sync() {
 			}
 		});
 	};
-
+	
 	var self = {
 		doSync : function() {
 			doSync();
@@ -570,6 +570,7 @@ function sync() {
 					//getDelta();
 					doSync();
 				});
+				//Ti.App.addEventListener('dropbox_login_fail',loginFailHandler);
 			}
 		}
 	};
