@@ -906,7 +906,7 @@ function MainWindow() {
 				// TODO: can't find match
 				var at = historyIds.indexOf(element);
 				if (at >= 0) {
-					Ti.API.info('found match at ' + at + '. History item is ' + history[at]);
+					//Ti.API.info('found match at ' + at + '. History item is ' + history[at]);
 					historyRows[at].fireEvent('status_updated');
 					var newDataRow = db.execute('SELECT * FROM history WHERE id=?', element);
 					history[at] = dbRow2Array(newDataRow);
@@ -1082,6 +1082,7 @@ function MainWindow() {
 								Ti.API.info('deleted row is at ' + deleted_row_index);
 								historyRows.splice(deleted_row_index, 1);
 								history.splice(deleted_row_index, 1);
+								historyIds.splice(deleted_row_index,1);
 								history_amount = historyRows.length;
 							} else {
 								//TODO:handle unknown error
@@ -1156,6 +1157,7 @@ function MainWindow() {
 						Ti.API.info('deleted row is at ' + deleted_row_index);
 						historyRows.splice(deleted_row_index, 1);
 						history.splice(deleted_row_index, 1);
+						historyIds.splice(deleted_row_index,1);
 						history_amount = historyRows.length;
 					} else {
 						//not found in history row. something wrong
@@ -1217,6 +1219,7 @@ function MainWindow() {
 				Ti.API.info('deleted row is at ' + deleted_row_index);
 				historyRows.splice(deleted_row_index, 1);
 				history.splice(deleted_row_index, 1);
+				historyIds.splice(deleted_row_index,1);
 				history_amount = historyRows.length;
 			} else {
 				//not found in history row. something wrong
