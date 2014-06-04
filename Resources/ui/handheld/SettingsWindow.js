@@ -17,6 +17,20 @@ var Sync = require('sync');
 
 var URL_QUTE = 'https://www.facebook.com/pages/Qute/368537286624382';
 
+function isIOS7Plus() {
+	// iOS-specific test
+	if (Titanium.Platform.name == 'iPhone OS') {
+		var version = Titanium.Platform.version.split(".");
+		var major = parseInt(version[0], 10);
+
+		// Can only test this support on a 3.2+ device
+		if (major >= 7) {
+			return true;
+		}
+	}
+	return false;
+}
+
 function db2array(rows) {
 
 	var returnArray = [];
@@ -432,7 +446,13 @@ function SettingsWindow() {
 	var syncProgress = Ti.UI.createActivityIndicator({
 		style : Ti.UI.iPhone.ActivityIndicatorStyle.DARK
 	});
-
+	
+	var syncProgressBar = Ti.UI.createProgressBar({
+		width:Ti.UI.FILL,
+		bottom:0,
+		min:0
+	});
+	
 	var syncSwitch = Ti.UI.createSwitch({
 		value : Ti.App.Properties.getBool('syncing'),
 		color : COLOR_PURPLE,
@@ -442,6 +462,10 @@ function SettingsWindow() {
 	syncRow.add(syncTitle);
 	syncRow.add(syncProgress);
 	syncRow.add(syncSwitch);
+	if (isIOS7Plus()){
+		syncRow.add(syncProgressBar);
+	}
+	
 	syncRow.addEventListener('click', function(e) {
 		//console.log('GoGoGo');
 		if (Ti.App.Properties.getBool('syncing')) {
@@ -478,7 +502,7 @@ function SettingsWindow() {
 		// Syncing started
 		syncTitle.text = L('settings_title_syncing');
 		syncTitle.addEventListener('postlayout', showSyncProgress);
-
+		
 	}
 
 	function changeSyncProgress(e) {
@@ -488,7 +512,9 @@ function SettingsWindow() {
 			syncTitle.addEventListener('postlayout', adjustSyncProgress);
 		}
 		adjustedSyncProgressPosition = true;
-		
+		syncProgressBar.show();
+		syncProgressBar.max = e['all'];
+		syncProgressBar.value = e['now'];
 	}
 
 
@@ -500,6 +526,7 @@ function SettingsWindow() {
 		// End syncing
 		syncTitle.text = L('settings_title_sync');
 		syncProgress.hide();
+		syncProgressBar.hide();
 	}
 
 

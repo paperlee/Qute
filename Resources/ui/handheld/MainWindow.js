@@ -774,8 +774,9 @@ function MainWindow() {
 				//self.remove(loginWidget);
 			});
 
-			Ti.App.addEventListener('loggedIn', function(e) {
+			Ti.App.addEventListener('loggedin', function(e) {
 				//logged in from Result page
+				//Ti.API.info('LOGGED IN REMOVE WIDGET');
 				main.remove(loginWidget);
 			});
 		}

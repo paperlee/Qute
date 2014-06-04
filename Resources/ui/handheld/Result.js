@@ -1321,10 +1321,12 @@ function Result(qrData, qrRow) {
 		fb.forceDialogAuth = true;
 		fb.addEventListener('login', function(e) {
 			if (e.success) {
+				// hide login widget in MainWindow
+				Ti.App.fireEvent('loggedin');
+				
 				descriptionView.remove(hintToLogInBox);
 				checkThreadExist(false);
-				//TODO:hide login widget in MainWindow
-				Ti.App.fireEvent('loggedin');
+				
 			} else if (e.error) {
 				alert(e.error);
 			} else if (e.cancelled) {
