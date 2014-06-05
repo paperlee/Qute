@@ -258,7 +258,8 @@ function Result(qrData, qrRow) {
 	guideShareTipBox.add(guideShareTipText);
 
 	onlineSwitchInstructionView.add(guideShareTipBox);
-
+	
+	// TODO: to make backgroundColor in transparent, make change in Titanium sdk and change backgroundColor to clearColor in TiUITableView.m
 	//pull down instruction
 	var pullDownInstructionView = Ti.UI.createView({
 		width : 320,
@@ -1379,7 +1380,7 @@ function Result(qrData, qrRow) {
 		separatorStyle : Ti.UI.iPhone.TableViewCellSelectionStyle.NONE,
 		headerPullView : pullDownInstructionView
 	});
-
+	
 	//Scroll tableview to make sure the result text visible
 	var display_height = Ti.Platform.displayCaps.platformHeight - 44 - 20;
 	//The max height of one-page on device
