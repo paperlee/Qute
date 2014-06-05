@@ -557,6 +557,7 @@ function sync() {
 			//TODO: add end_syncing event
 			Ti.App.fireEvent('start_syncing', {});
 			Ti.App.Properties.setString('latestSync', (new Date()).toISOString());
+			Ti.App.Properties.setBool('syncing', true);
 			if (client.isAuthorized()) {
 				console.log('Already logged in');
 				//getDelta();
@@ -564,7 +565,6 @@ function sync() {
 			} else {
 				console.log('Go logging in');
 				client.login(function(options) {
-					Ti.App.Properties.setBool('syncing', true);
 					console.log('Great! login done!' + options.toString());
 					console.log('syncing: ' + Ti.App.Properties.getBool('syncing'));
 					//getDelta();
