@@ -233,7 +233,7 @@ function SettingsWindow() {
 		applyAnimation(latestSyncView);
 	}
 
-	function reapplyLatestSyncDate(e) {
+	function reapplyLatestSyncDate() {
 		var latest_sync_date = Ti.App.Properties.getString('latestSync');
 
 		if (latestSyncDate.text == 'none') {
@@ -249,7 +249,7 @@ function SettingsWindow() {
 	}
 
 
-	Ti.App.addEventListener('end_syncing', reapplyLatestSyncDate);
+	//Ti.App.addEventListener('end_syncing', reapplyLatestSyncDate);
 
 	var settingsSection = Ti.UI.createTableViewSection({
 		footerView : syncFooterView
@@ -528,6 +528,8 @@ function SettingsWindow() {
 		syncTitle.text = L('settings_title_sync');
 		syncProgress.hide();
 		syncProgressBar.hide();
+		
+		reapplyLatestSyncDate();
 	}
 	
 	function dropboxLoginFailHandler(e){
@@ -716,7 +718,7 @@ function SettingsWindow() {
 		// Release memory
 		Ti.App.removeEventListener('start_syncing', startSyncing);
 		Ti.App.removeEventListener('end_syncing', endSyncing);
-		Ti.App.removeEventListener('end_syncing', reapplyLatestSyncDate);
+		//Ti.App.removeEventListener('end_syncing', reapplyLatestSyncDate);
 		Ti.App.removeEventListener('sync_progress_changed', changeSyncProgress);
 		Ti.App.removeEventListener('dropbox_login_fail',dropboxLoginFailHandler);
 	});

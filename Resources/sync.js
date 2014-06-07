@@ -557,6 +557,7 @@ function sync() {
 			//TODO: add end_syncing event
 			Ti.App.fireEvent('start_syncing', {});
 			Ti.App.Properties.setString('latestSync', (new Date()).toISOString());
+			//console.log('The sync date changed: '+Ti.App.Properties.getString('latestSync'));
 			Ti.App.Properties.setBool('syncing', true);
 			if (client.isAuthorized()) {
 				console.log('Already logged in');

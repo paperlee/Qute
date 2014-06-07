@@ -566,7 +566,7 @@ function Result(qrData, qrRow) {
 					// handle error
 					console.log('Error happened while getting title: ' + e.error);
 				},
-				timeout : 5000
+				timeout : 20000
 			});
 
 			//TODO:shorten url may fail
@@ -968,11 +968,12 @@ function Result(qrData, qrRow) {
 			//Network is down
 			Ti.API.info('network is down');
 			//TODO: Don't know why below toast won't work. conflict Toast object?
-			self.addEventListener('postlayout', function(e) {
+			// Don't show toast to bother the user about offline network..
+			/*self.addEventListener('postlayout', function(e) {
 				var networkDownToast = new Toast(L('network_down'));
 				networkDownToast.top = 50;
 				self.add(networkDownToast);
-			});
+			});*/
 
 			//show reload button
 			buttonReload.visible = true;
@@ -2180,16 +2181,24 @@ function Result(qrData, qrRow) {
 				// TODO: Retry after timed out
 				switch(e.code) {
 					case 1:
-						Ti.UI.createAlertDialog({
+						// Netwrok error
+						var connectFBErrorToast = new Toast(L('result_xhr_error_1_title'));
+						connectFBErrorToast.top = 50;
+						self.add(connectFBErrorToast);
+						/*Ti.UI.createAlertDialog({
 							title : L('result_xhr_error_1_title'),
 							message : L('result_xhr_error_1_msg')
-						}).show();
+						}).show();*/
 						break;
 					case 2:
-						Ti.UI.createAlertDialog({
+						// Timed out
+						var connectFBErrorToast = new Toast(L('result_xhr_error_2_title'));
+						connectFBErrorToast.top = 50;
+						self.add(connectFBErrorToast);
+						/*Ti.UI.createAlertDialog({
 							title : L('result_xhr_error_2_title'),
 							message : L('result_xhr_error_2_msg')
-						}).show();
+						}).show();*/
 						break;
 					default:
 						Ti.UI.createAlertDialog({
@@ -2210,7 +2219,7 @@ function Result(qrData, qrRow) {
 				// To avoid duplicated response
 				client = null;
 			},
-			timeout : 5000
+			timeout : 20000
 		});
 		client.open('GET', query_url);
 		client.send();
