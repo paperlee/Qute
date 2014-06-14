@@ -120,6 +120,7 @@ function QRRow(rowData) {
 
 		if (rowData['loved'] == 0) {
 			rowData['loved'] = 1;
+			Ti.App.fireEvent('loved');
 		} else {
 			rowData['loved'] = 0;
 		}

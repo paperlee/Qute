@@ -53,6 +53,7 @@ var Toast = require('ui/handheld/iToast');
 var Loading = require('ui/handheld/iLoading');
 var SettingsWindow = require('ui/handheld/SettingsWindow');
 var Keys = require('keys');
+var LikedAnimation = require('ui/handheld/LikedAnimation');
 //var Login = require('ui/handheld/Login');
 
 var QRRow = require('ui/handheld/QRRow');
@@ -893,7 +894,23 @@ function MainWindow() {
 	 }
 
 	 }*/
-
+	
+	// Listen to loved event. Show animation
+	Ti.App.addEventListener('loved',function(e){
+		var lovedView = new LikedAnimation();
+		main.add(lovedView);
+		
+		var lovedAnimationDone = function(){
+			// kill the animation view
+			lovedView.removeEventListener('animationDone',lovedAnimationDone);
+			main.remove(lovedView);
+			lovedView = null;
+		};
+		
+		lovedView.addEventListener('animationDone',lovedAnimationDone);
+	});
+	
+	// Listen to end_syncing event
 	Ti.App.addEventListener('end_syncing', function(e) {
 		var changed_ids = e.changed_ids;
 		var insert_ids = e.insert_ids;
