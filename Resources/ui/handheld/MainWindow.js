@@ -290,6 +290,7 @@ function MainWindow() {
 					
 					refreshTable(segmenterIndex);
 					
+					//TODO: Can NOT delete the QR row that just created. Because of updateSection?
 					//show result page
 					var result = new ResultWindow(newQR, newRow);
 					self.openWindow(result);
