@@ -7,6 +7,8 @@ var BUTTON_GOODED_COLOR = '#9857a7';
 
 var fb = require('facebook');
 
+var Toast = require('ui/handheld/iToast');
+
 function CommentRow(rowData) {
 
 	//rowData: {
@@ -124,9 +126,11 @@ function CommentRow(rowData) {
 		text : rowData['text'],
 		bottom:10
 	});
-
-	var buttonGood = Ti.UI.createButton({
-		backgroundImage : '/images/icon_good.png',
+	
+	var backgroundUpVote = rowData['user_likes']?'/images/icon_gooded.png':'/images/icon_good.png';
+	
+	var buttonUpVote = Ti.UI.createButton({
+		backgroundImage : backgroundUpVote,
 		width : 60,
 		height : 60,
 		title : rowData['likes'],
@@ -139,8 +143,67 @@ function CommentRow(rowData) {
 	commentView.add(dateBlock);
 	commentView.add(timeBlock);
 	commentView.add(msg);
-	commentView.add(buttonGood);
-
+	commentView.add(buttonUpVote);
+	
+	buttonUpVote.addEventListener('click',function(e){
+		Ti.API.info('comment id is '+rowData['cid']);
+		if (rowData['user_likes']){
+			//do Unlike
+			buttonUpVote.backgroundImage = '/images/icon_good.png';
+			rowData['likes'] = parseInt(rowData['likes']) - 1;
+			buttonUpVote.title = rowData['likes'];
+			fb.requestWithGraphPath('/'+rowData['cid']+'/likes',{},'DELETE',function(e){
+				if (e.success){
+					//alert('dislike success!');
+					var toastLiked = new Toast(L('dislike_success'));
+					self.add(toastLiked);
+					rowData['user_likes'] = false;
+					
+				} else {
+					if (e.error){
+						//alert(e.error);
+					} else {
+						//alert('unknown error');
+					}
+					buttonUpVote.backgroundImage = '/images/icon_gooded.png';
+					var toastLiked = new Toast(L('dislike_unsuccess'));
+					self.add(toastLiked);
+					rowData['likes'] = parseInt(rowData['likes']) + 1;
+					buttonUpVote.title = rowData['likes'];
+				}
+			});
+			
+		} else {
+			//do like
+			buttonUpVote.backgroundImage = '/images/icon_gooded.png';
+			
+			rowData['likes'] = parseInt(rowData['likes']) + 1;
+			buttonUpVote.title = rowData['likes'];
+			
+			fb.requestWithGraphPath('/'+rowData['cid']+'/likes',{},'POST',function(e){
+				if (e.success){
+					//alert('like success!');
+					var toastLiked = new Toast(L('like_success'));
+					self.add(toastLiked);
+					rowData['user_likes'] = true;
+				} else {
+					if (e.error){
+						//alert(e.error);
+					} else {
+						//alert('unknown error');
+					}
+					buttonUpVote.backgroundImage = '/images/icon_good.png';
+					var toastLiked = new Toast(L('like_unsuccess'));
+					self.add(toastLiked);
+					
+					rowData['likes'] = parseInt(rowData['likes']) - 1;
+					buttonUpVote.title = rowData['likes'];
+				}
+			});
+		}
+		
+	});
+	
 	//var height_msg = msg.top + msg.toImage().height + pictureView.top;
 	//margin bottom and top equal to puctureView.top
 	//var height_user = nameBlock.top + nameBlock.toImage().height + pictureView.top;

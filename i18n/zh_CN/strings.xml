@@ -21,12 +21,20 @@
 	<string name="confirm_title_delete_from_fb">同时删掉脸书上的讨论列吗？</string>
 	<string name="toast_deleted_from_fb">在脸书上已成功删除</string>
 	<string name="alert_cant_delete_fb">无法删除脸书上的讨论列。请等下再试一次</string>
+	<string name="alert_relogin_fb_title">无法连结Facebook帐号</string>
+	<string name="alert_relogin_fb_msg">请重新登入</string>
 	
 	<!-- LoadingWidget -->
 	<string name="button_title_login_fb">使用Facebook登入</string>
 	<string name="button_subtitle_join_world">加入世界潮流</string>
 	<string name="button_title_not_now">之後再說</string>
 	<string name="button_title_why">WHY</string>
+	
+	<!-- CommentRow -->
+	<string name="like_success">已支持！</string>
+	<string name="like_unsuccess">系统好像出了问题，请再试试</string>
+	<string name="dislike_success">成功取消支持...</string>
+	<string name="dislike_unsuccess">系统好像出了问题，请再试试</string>
 	
 	<!-- WhyWindow -->
 	<string name="navibar_button_title_close">关闭</string>
@@ -45,7 +53,7 @@
 	
 	<!-- Result -->
 	<string name="no_item_title_share_first_tip">分享些什么吧！</string>
-	<string name="guide_text_putonline">在QUTE脸书专页发布一个讨论串，让大家分享心得</string>
+	<string name="guide_text_putonline">在Qute脸书专页发布一个讨论串，让大家分享心得</string>
 	<string name="guide_title_putonline">拉上线</string>
 	<string name="guide_text_sharetip">这QR码值得继续看下去吗？在社群里分享些心得</string>
 	<string name="guide_title_sharetip">分享心得</string>
@@ -75,6 +83,12 @@
 	<string name="confirm_title_create_post">仍然要将这个内容传上Qute脸书专页吗？</string>
 	<string name="confirm_msg_create_post">这QR码看起来不是单纯的连结</string>
 	<string name="network_down">未连接到网路</string>
+	<string name="result_xhr_error_1_title">网路不通</string>
+	<string name="result_xhr_error_1_msg">检查网路状态并稍后试试</string>
+	<string name="result_xhr_error_2_title">连接逾时</string>
+	<string name="result_xhr_error_2_msg">检查网路状态并稍后试试</string>
+	<string name="result_xhr_error_others_title">无法连接</string>
+	<string name="result_xhr_error_others_msg">检查网路状态并稍后试试</string>
 	
 	<!-- Settings -->
 	<string name="window_title_settings">设定</string>
@@ -89,7 +103,14 @@
 	<string name="navibar_button_title_save">储存</string>
 	<string name="navibar_button_title_cancel">取消</string>
 	<string name="settings_title_language">语言</string>
+	<string name="settings_title_sync">同步</string>
+	<string name="settings_title_syncing">同步中...</string>
+	<string name="settings_title_syncing_progress">同步中</string>
+	<string name="settings_latest_sync">最近一次同步: </string>
+	<string name="settings_power_by">Powered by</string>
+	<string name="settings_last_sync_never">從未同步</string>
+	<string name="toast_dropbox_login_fail">无法完成Dropbox授权</string>
 
 	<!-- Toast -->
-	<string name="toast placeholder">嗯...你是想干嘛？</string>
+	<string name="toast_placeholder">嗯...你是想干嘛？</string>
 </resources>

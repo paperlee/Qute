@@ -25,7 +25,7 @@ var fadeIn = Ti.UI.createAnimation({
 	duration : 500
 });
 
-var FACEBOOK_APP_ID = 614174031953325;
+var FACEBOOK_APP_ID;
 
 var is_init_typing = true;
 
@@ -38,6 +38,9 @@ var ToastWithImage = require('ui/handheld/iToastWithImage');
 var CommentRow = require('ui/handheld/CommentRow');
 var Loading = require('ui/handheld/iLoading');
 var WhyWindow = require('ui/handheld/WhyWindow');
+var Keys = require('keys');
+
+var patt_http = /^(http|https)/gi;
 
 var sayIsFocused = false;
 
@@ -61,6 +64,10 @@ function isIOS7Plus() {
 }
 
 function Result(qrData, qrRow) {
+
+	var keys = new Keys();
+
+	FACEBOOK_APP_ID = keys.facebook_appid;
 
 	//check if ios7+
 	ios7 = isIOS7Plus();
@@ -151,7 +158,7 @@ function Result(qrData, qrRow) {
 		}, {
 			type : Ti.UI.iOS.ATTRIBUTE_FOREGROUND_COLOR,
 			value : COLOR_LINK,
-			range : [putOnlineStr.indexOf('Qute'), ('Qute').length]
+			range : [putOnlineStr.indexOf('Qute'), 4]
 		}]
 	});
 
@@ -251,18 +258,20 @@ function Result(qrData, qrRow) {
 	guideShareTipBox.add(guideShareTipText);
 
 	onlineSwitchInstructionView.add(guideShareTipBox);
-
+	
+	// TODO: to make backgroundColor in transparent, make change in Titanium sdk and change backgroundColor to clearColor in TiUITableView.m
 	//pull down instruction
 	var pullDownInstructionView = Ti.UI.createView({
 		width : 320,
-		height : 44
+		height : 44,
+		backgroundColor:'transparent'
 	});
 
 	var guideTopBg = Ti.UI.createView({
 		bottom : 44,
 		width : Ti.UI.FILL,
 		height : 100,
-		backgroundColor : '9a000000'
+		backgroundColor : '#9a000000'
 	});
 
 	var guideBottomBg = Ti.UI.createView({
@@ -368,7 +377,7 @@ function Result(qrData, qrRow) {
 		right : 0,
 		style : Ti.UI.iPhone.SystemButtonStyle.PLAIN
 	});
-
+	
 	//check if there is value in result
 	if (!qrData || typeof (qrData) === 'undefined') {
 		Ti.API.info('There is no result');
@@ -521,6 +530,61 @@ function Result(qrData, qrRow) {
 	if (qrData.qrtype === 0) {
 		//HTTP type
 		buttonOpenInSafari.enabled = true;
+
+		//console.log('title = raw?:'+(qrData['title'] == qrData['raw'])+'::'+qrData['title'] + '::'+qrData['raw']);
+		// Try to get website title
+		if (qrData['title'] == qrData['raw']) {
+			var httpRequest = Ti.Network.createHTTPClient({
+				onload : function(e) {
+					//console.log('response text:'+this.responseText);
+					// TODO:better match pattern
+					var matches = this.responseText.match(/<title>(.*?)<\/title>/gi);
+					if (matches != null) {
+						//console.log('found title:'+matches[0]);
+						var title_string = matches[0].substring(7, matches[0].length - 8);
+						// Assign back title to db
+						qrData['title'] = title_string;
+						var db = Ti.Database.open('qute');
+						var datetime = new Date().toISOString();
+						db.execute('UPDATE history SET title=?,last_update=? WHERE id=?', qrData['title'], datetime, qrData['id']);
+						db.close();
+
+						//Assign in UI title field
+						//resultText.text = qrData['title'];
+						resultText.visible = false;
+						readableTitle.text = qrData['title'];
+						readableTitle.visible = true;
+						rawLabel.text = qrData['raw'];
+						rawLabel.visible = true;
+
+						//call row to update self data
+						Ti.API.info('Staus shall updated!!');
+						qrRow.fireEvent('status_updated');
+					}
+				},
+				onerror : function(e) {
+					// handle error
+					console.log('Error happened while getting title: ' + e.error);
+				},
+				timeout : 20000
+			});
+
+			//TODO:shorten url may fail
+
+			var url;
+			if (qrData['raw'].search(patt_http) < 0) {
+				// need to add http at beginning
+				url = 'http://' + qrData['raw'];
+			} else {
+				url = qrData['raw'];
+			}
+
+			console.log('request url ' + url);
+
+			httpRequest.open('GET', url);
+			httpRequest.send();
+		}
+
 	} else {
 		//disable, QR is other types
 		//TODO: other type of link, ex. contacts
@@ -760,7 +824,7 @@ function Result(qrData, qrRow) {
 					sayPanel.height = 44;
 					say.height = 'auto';
 					sayPanelHeader.headerView = sayPanel;
-					table.updateSection(sayPanelHeader, 1);
+					table.updateSection(1, sayPanelHeader);
 
 					fb.requestWithGraphPath('' + qrData['post_id'] + '?fields=comments', {}, 'GET', function(e) {
 						if (e.success) {
@@ -871,21 +935,21 @@ function Result(qrData, qrRow) {
 			Ti.API.info('Now device is online');
 			Ti.API.info('FB? ' + fb.loggedIn);
 			/*fb.reauthorize([], 'me', function(e) {
-				if (e.sucess) {
-					Ti.App.Properties.setBool('loggedin', true);
-					Ti.API.info('NOW FB ONLINE? ' + fb.loggedIn);
+			 if (e.sucess) {
+			 Ti.App.Properties.setBool('loggedin', true);
+			 Ti.API.info('NOW FB ONLINE? ' + fb.loggedIn);
 
-				} else {
-					if (e.error) {
-						alert(e.error);
-					} else {
-						alert("Unknown result");
-					}
-				}
-			});*/
-			
+			 } else {
+			 if (e.error) {
+			 alert(e.error);
+			 } else {
+			 alert("Unknown result");
+			 }
+			 }
+			 });*/
+
 			checkThreadExist(false, true);
-			
+
 			Ti.Network.removeEventListener('change', network_change_listener);
 		}
 	};
@@ -896,34 +960,37 @@ function Result(qrData, qrRow) {
 		//				+'SELECT+post_id+FROM+stream+WHERE+source_id=368537286624382'
 		//				+'+AND+strpos(message,\''+encodeURIComponent(data.barcode)+'\')=0)' + '&access_token=' + fb.accessToken;
 		Ti.API.info('Checked loggedin status');
-		if (Ti.Network.online){
+		if (Ti.Network.online) {
+			Ti.API.info('fb.loggedIn:'+fb.loggedIn+'::access_token:'+fb.accessToken);
+			//if (fb.accessToken)
 			checkThreadExist(false, true);
 		} else {
 			//Network is down
 			Ti.API.info('network is down');
 			//TODO: Don't know why below toast won't work. conflict Toast object?
-			self.addEventListener('postlayout',function(e){
+			// Don't show toast to bother the user about offline network..
+			/*self.addEventListener('postlayout', function(e) {
 				var networkDownToast = new Toast(L('network_down'));
 				networkDownToast.top = 50;
 				self.add(networkDownToast);
-			});
-			
+			});*/
+
 			//show reload button
 			buttonReload.visible = true;
 			switchOnFb.visible = false;
 			buttonSeeOnFb.visible = false;
-			
+
 			//Ti.Network.addEventListener('change',network_change_listener);
 		}
-		
+
 		//TODO:Bug: Log in FB -> log out(don't know reason). At the time the table won't be updated(locked in local db)
 	} else {
 		//offline
 		switchOnFb.enabled = false;
-		
+
 		Ti.API.info('loggedin status false');
 		/*if (!Ti.Network.online) {
-			Ti.Network.addEventListener('change', network_change_listener);
+		Ti.Network.addEventListener('change', network_change_listener);
 		}*/
 
 		//Attach tap twice hint
@@ -974,6 +1041,7 @@ function Result(qrData, qrRow) {
 		}
 	});
 
+	//TODO: Adjust the resultText width to leave space for buttonShare
 	var resultText = Ti.UI.createLabel({
 		width : 280,
 		left : 20,
@@ -999,7 +1067,7 @@ function Result(qrData, qrRow) {
 	});
 
 	var rawLabel = Ti.UI.createLabel({
-		width : 280,
+		width : 246,
 		wordWrap : false,
 		bottom : 30,
 		left : 20,
@@ -1038,6 +1106,7 @@ function Result(qrData, qrRow) {
 	blankSpaceBottom.add(timeBlock);
 	blankSpaceBottom.add(readableTitle);
 	blankSpaceBottom.add(rawLabel);
+	//blankSpaceBottom.add(buttonShare);
 
 	//top margin: 36, bottom margin:30
 	var title_area_height = 44;
@@ -1048,14 +1117,14 @@ function Result(qrData, qrRow) {
 		rawLabel.visible = true;
 
 		title_area_height = readableTitle.toImage().height + rawLabel.toImage().height + 36 + 30;
-		Ti.API.info('show readable title and the height: ' + title_area_height);
+		//Ti.API.info('show readable title and the height: ' + title_area_height);
 	} else {
 		resultText.visible = true;
 		readableTitle.visible = false;
 		rawLabel.visible = false;
 
 		title_area_height = resultText.toImage().height + 36 + 30;
-		Ti.API.info('NOT show readable title and the height: ' + title_area_height);
+		//Ti.API.info('NOT show readable title and the height: ' + title_area_height);
 	};
 
 	//var title_area_height = resultText.toImage().height + 36 + 30;
@@ -1075,11 +1144,12 @@ function Result(qrData, qrRow) {
 		image : '/images/icon_share.png',
 		tintColor : 'white',
 		right : 14,
-		top : 14,
+		bottom : 6,
 		style : Ti.UI.iPhone.SystemButtonStyle.PLAIN
 	});
 
-	blankSpaceTop.add(buttonShare);
+	//blankSpaceTop.add(buttonShare);
+	blankSpaceBottom.add(buttonShare);
 
 	buttonShare.addEventListener('click', function(e) {
 		var share_string;
@@ -1246,8 +1316,8 @@ function Result(qrData, qrRow) {
 	whyLabel.addEventListener('click', function(e) {
 		var whyWin = new WhyWindow();
 	});
-
-	buttonFb.addEventListener('click', function(e) {
+	
+	var goLoginFB = function(e){
 		//login in fb
 		fb.appid = FACEBOOK_APP_ID;
 		fb.permissions = ['publish_actions', 'publish_stream', 'read_stream'];
@@ -1255,10 +1325,14 @@ function Result(qrData, qrRow) {
 		fb.forceDialogAuth = true;
 		fb.addEventListener('login', function(e) {
 			if (e.success) {
+				// hide login widget in MainWindow
+				Ti.App.fireEvent('loggedin');
+				
+				Ti.App.Properties.setBool('loggedin',true);
+				
 				descriptionView.remove(hintToLogInBox);
 				checkThreadExist(false);
-				//TODO:hide login widget in MainWindow
-				Ti.App.fireEvent('loggedin');
+				
 			} else if (e.error) {
 				alert(e.error);
 			} else if (e.cancelled) {
@@ -1266,7 +1340,9 @@ function Result(qrData, qrRow) {
 			}
 		});
 		fb.authorize();
-	});
+	};
+
+	buttonFb.addEventListener('click', goLoginFB);
 
 	var hintToLogInBox = Ti.UI.createView({
 		width : Ti.UI.FILL,
@@ -1300,11 +1376,22 @@ function Result(qrData, qrRow) {
 		top : 0,
 		bottom : 0,
 		sections : [blankSpaceHeader, sayPanelHeader],
-		backgroundColor : '#00ffffff',
+		backgroundColor : '#00000000',
 		scrollsToTop : true,
 		separatorStyle : Ti.UI.iPhone.TableViewCellSelectionStyle.NONE,
-		headerPullView : pullDownInstructionView
+		headerPullView : pullDownInstructionView,
+		pullBackgroundColor : 'transparent'
 	});
+	
+	//Scroll tableview to make sure the result text visible
+	var display_height = Ti.Platform.displayCaps.platformHeight - 44 - 20;
+	//The max height of one-page on device
+	//Ti.API.info('[1]pic height is '+picFrame.height);
+	//Ti.API.info('[1]display height is '+display_height);
+	if (picFrame.height > display_height) {
+		//Ti.API.info('[2]Shall top to '+(picFrame.height-display_height));
+		table.scrollToTop(picFrame.height - display_height);
+	}
 
 	//wholeView.add(sayPanel);
 	wholeView.add(table);
@@ -1442,7 +1529,8 @@ function Result(qrData, qrRow) {
 				//alert(L('The QR code is now off the world.'));
 				qrData['post_id'] = -1;
 				var db = Ti.Database.open('qute');
-				db.execute('UPDATE history SET post_id=? WHERE id=?', -1, qrData['id']);
+				var datetime = new Date().toISOString();
+				db.execute('UPDATE history SET post_id=?,last_update=? WHERE id=?', -1, datetime, qrData['id']);
 				db.close();
 
 				//clean comments
@@ -1466,6 +1554,9 @@ function Result(qrData, qrRow) {
 				//work done! hide loading activity
 				loadingView.visible = false;
 				loadingIcon.hide();
+
+				//reset switching to false
+				switchOnFb.switching = false;
 			} else {
 				if (e.error) {
 					switchOnFb.value = true;
@@ -1482,6 +1573,9 @@ function Result(qrData, qrRow) {
 				loadingView.visible = false;
 				loadingIcon.hide();
 
+				//reset switching to false
+				switchOnFb.switching = false;
+
 				//enable comment feature
 				say.visible = true;
 				sendButton.visible = true;
@@ -1492,6 +1586,9 @@ function Result(qrData, qrRow) {
 
 	//TODO: require twice when go into Result
 	function checkThreadExist(fromSwitch, justIn) {
+		
+		var original_data = qrData;
+		
 		if (fromSwitch === null || fromSwitch === undefined) {
 			//default fromSwitch value
 			fromSwitch = false;
@@ -1507,27 +1604,29 @@ function Result(qrData, qrRow) {
 		loadingIcon.show();
 
 		/*var loadingIcon = Ti.UI.createActivityIndicator({
-		 style : Ti.UI.iPhone.ActivityIndicatorStyle.BIG,
-		 color : 'white'
-		 });
+		style : Ti.UI.iPhone.ActivityIndicatorStyle.BIG,
+		color : 'white'
+		});
 
-		 loadingIcon.show();
+		loadingIcon.show();
 
-		 var loadingView = Ti.UI.createView({
-		 backgroundColor : '#aaaaaa',
-		 opacity : 0.9,
-		 borderRadius : 10,
-		 width : 80,
-		 height : 80
-		 });
+		var loadingView = Ti.UI.createView({
+		backgroundColor : '#aaaaaa',
+		opacity : 0.9,
+		borderRadius : 10,
+		width : 80,
+		height : 80
+		});
 
-		 loadingView.add(loadingIcon);
-		 self.add(loadingView);*/
-		
+		loadingView.add(loadingIcon);
+		self.add(loadingView);*/
+
 		// note: fql have to be in unicode encode and > is %3E
-		var query_url = 'https://graph.facebook.com/' + 'fql?q=' + 'SELECT+post_id+FROM+stream+WHERE+source_id=368537286624382' + '+AND+strpos(message,%27' + encodeURIComponent(qrData['raw']) + '%27)%3E=0' + '&access_token=' + fb.accessToken;
+		var query_url = 'https://graph.facebook.com/v2.0/' + 'fql?q=' + 'SELECT+post_id+FROM+stream+WHERE+source_id=368537286624382' + '+AND+strpos(message,%27' + encodeURIComponent(qrData['raw']) + '%27)%3E=0' + '&access_token=' + fb.accessToken;
+		console.log('Query URL is '+query_url);
 		//alert(query_url);
 		//Ti.UI.Clipboard.setText(query_url);
+		//TODO: request timeout may cause duplicated http request. Didn't clean client?
 		var client = Ti.Network.createHTTPClient({
 			onload : function(e) {
 
@@ -1542,6 +1641,7 @@ function Result(qrData, qrRow) {
 				var post_id;
 				//alert('success\n' + count);
 				//TODO:What if a thread has been remove(exited)? Exist->Other removed->NOT Exist?
+				// Nothing matched in FB
 				if (count == 0) {
 
 					//thread not exist, create one
@@ -1575,10 +1675,16 @@ function Result(qrData, qrRow) {
 						say.visible = false;
 						sendButton.visible = false;
 						cantSay.visible = true;
+						
+						if (original_data['post_id'] == post_id){
+							// Didn't change anything. abort without updating.
+							return;
+						}
 
 						var db = Ti.Database.open('qute');
 						//Update post_id and from_me?
-						db.execute('UPDATE history SET post_id=? WHERE id=?', post_id, qrData['id']);
+						var datetime = new Date().toISOString();
+						db.execute('UPDATE history SET post_id=?,last_update=? WHERE id=?', post_id, datetime, qrData['id']);
 						db.close();
 
 						qrData['post_id'] = 0;
@@ -1620,6 +1726,7 @@ function Result(qrData, qrRow) {
 						return;
 					}
 
+					// Posting...
 					if (qrData.qrtype == 0) {
 						fb.requestWithGraphPath('368537286624382/feed', {
 							message : qrData['raw'],
@@ -1632,7 +1739,8 @@ function Result(qrData, qrRow) {
 								post_id = result.id;
 								var db = Ti.Database.open('qute');
 								//update post_id and from_me?
-								db.execute('UPDATE history SET post_id=?,from_me=? WHERE id=?', post_id, 1, qrData['id']);
+								var datetime = new Date().toISOString();
+								db.execute('UPDATE history SET post_id=?,from_me=?,last_update=? WHERE id=?', post_id, 1, datetime, qrData['id']);
 								db.close();
 
 								//assign back the local data
@@ -1693,7 +1801,8 @@ function Result(qrData, qrRow) {
 												qrData['title'] = nameResult['name'];
 
 												var db = Ti.Database.open('qute');
-												db.execute('UPDATE history SET title=? WHERE id=?', qrData['title'], qrData['id']);
+												var datetime = new Date().toISOString();
+												db.execute('UPDATE history SET title=?,last_update=? WHERE id=?', qrData['title'], datetime, qrData['id']);
 												db.close();
 
 												//Assign in UI title field
@@ -1762,7 +1871,8 @@ function Result(qrData, qrRow) {
 										post_id = result.id;
 										var db = Ti.Database.open('qute');
 										//Update post_id and from_me?
-										db.execute('UPDATE history SET post_id=?,from_me=? WHERE id=?', post_id, 1, qrData['id']);
+										var datetime = new Date().toISOString();
+										db.execute('UPDATE history SET post_id=?,from_me=?,last_update=? WHERE id=?', post_id, 1, datetime, qrData['id']);
 										db.close();
 
 										//assign back the local data
@@ -1832,7 +1942,8 @@ function Result(qrData, qrRow) {
 								Ti.API.info('User canceled the creating action');
 								post_id = -1;
 								var db = Ti.Database.open('qute');
-								db.execute('UPDATE history SET post_id=? WHERE id=?', post_id, qrData['id']);
+								var datetime = new Date().toISOString();
+								db.execute('UPDATE history SET post_id=?,last_update=? WHERE id=?', post_id, datetime, qrData['id']);
 								db.close();
 
 								//assign back the local data
@@ -1897,7 +2008,7 @@ function Result(qrData, qrRow) {
 								Ti.API.info('Name isn\'t found');
 							} else {
 								//name exist. check if different
-								Ti.API.info('Name is ' + commentsData['name']);
+								//Ti.API.info('Name is ' + commentsData['name']);
 								if (qrData['title'] != commentsData['name']) {
 									//different, need update!
 									Ti.API.info('Different! need update title field');
@@ -1919,14 +2030,15 @@ function Result(qrData, qrRow) {
 							}
 
 							//check if from_me
-							Ti.API.info("post from id is " + commentsData.from.id);
-							Ti.API.info("user id is " + fb.uid);
+							//Ti.API.info("post from id is " + commentsData.from.id);
+							//Ti.API.info("user id is " + fb.uid);
 							from_me = (commentsData.from.id == fb.uid);
 							if (qrData['from_me'] != from_me || need_update) {
 								//shall update from_me status
 								qrData['from_me'] = from_me;
 								var db = Ti.Database.open('qute');
-								db.execute('UPDATE history SET title=?, post_id=?, from_me=? WHERE id=?', qrData['title'], qrData['post_id'], qrData['from_me'], qrData['id']);
+								var datetime = new Date().toISOString();
+								db.execute('UPDATE history SET title=?, post_id=?, from_me=?, last_update=? WHERE id=?', qrData['title'], qrData['post_id'], qrData['from_me'], datetime, qrData['id']);
 								db.close();
 
 								//Update dialog qute link
@@ -2066,8 +2178,38 @@ function Result(qrData, qrRow) {
 				cantSay.visible = true;
 
 				//loading.fireEvent('done');
-
-				alert(e.error);
+				
+				// TODO: the error code for time out: 2
+				// TODO: Retry after timed out
+				switch(e.code) {
+					case 1:
+						// Netwrok error
+						var connectFBErrorToast = new Toast(L('result_xhr_error_1_title'));
+						connectFBErrorToast.top = 50;
+						self.add(connectFBErrorToast);
+						/*Ti.UI.createAlertDialog({
+							title : L('result_xhr_error_1_title'),
+							message : L('result_xhr_error_1_msg')
+						}).show();*/
+						break;
+					case 2:
+						// Timed out
+						var connectFBErrorToast = new Toast(L('result_xhr_error_2_title'));
+						connectFBErrorToast.top = 50;
+						self.add(connectFBErrorToast);
+						/*Ti.UI.createAlertDialog({
+							title : L('result_xhr_error_2_title'),
+							message : L('result_xhr_error_2_msg')
+						}).show();*/
+						break;
+					default:
+						Ti.UI.createAlertDialog({
+							title:L('result_xhr_error_others_title')+'['+e.code+']',
+							message:L('result_xhr_error_others_msg')
+						}).show();
+						
+				}
+				Ti.API.info(e.error + "["+e.code+"]");
 
 				//Attach tap twice hint
 				if (justIn && !Ti.App.Properties.getBool('didCopy')) {
@@ -2075,8 +2217,11 @@ function Result(qrData, qrRow) {
 					self.add(tapTwiceHint);
 					tapTwiceHint.top = picFrame.toImage().height - tapTwiceHint.toImage().height - MARGIN_HINT_BOTTOM;
 				}
+
+				// To avoid duplicated response
+				client = null;
 			},
-			timeout : 5000
+			timeout : 20000
 		});
 		client.open('GET', query_url);
 		client.send();
@@ -2129,7 +2274,8 @@ function Result(qrData, qrRow) {
 					likes : comments.data[i]['like_count'],
 					from_me : comments.data[i]['can_remove'], //TODO: real check if it's from me
 					time : comments.data[i]['created_time'],
-					cid : comments.data[i]['id']
+					cid : comments.data[i]['id'],
+					user_likes : comments.data[i]['user_likes']
 				};
 
 				temp_row = new CommentRow(comment_data);
@@ -2139,7 +2285,7 @@ function Result(qrData, qrRow) {
 		}
 
 		temp_row = null;
-		table.updateSection(sayPanelHeader, 1);
+		table.updateSection(1, sayPanelHeader);
 
 	}
 

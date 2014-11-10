@@ -17,14 +17,18 @@ var COLOR_WHY_HIGHLIGHTED = '#5a6e99';
 var COLOR_SKIP_HIGHLIGHTED = '#aa5c61';
 //red
 
-var FACEBOOK_APP_ID = 614174031953325;
+var FACEBOOK_APP_ID;
 
 var history = [];
 
 var fb = require('facebook');
 var WhyWindow = require('ui/handheld/WhyWindow');
+var Keys = require('keys');
 
 function LoginWidget() {
+	var keys = new Keys();
+	FACEBOOK_APP_ID = keys.facebook_appid;
+	
 	//TODO:only appear Login page at first launch
 	//alert("loged in: "+fb.loggedIn);
 

@@ -2,7 +2,7 @@
 <ti:app xmlns:ti="http://ti.appcelerator.org">
     <id>studio.paperworks.Qute</id>
     <name>Qute</name>
-    <version>1.0.1</version>
+    <version>1.2.0</version>
     <publisher>paper</publisher>
     <url>http://paperli.github.io</url>
     <description>not specified</description>
@@ -39,11 +39,12 @@
         <theme>default</theme>
     </mobileweb>
     <modules>
-        <module platform="iphone" version="0.4.4">tibar</module>
         <module platform="android">facebook</module>
         <module platform="iphone">facebook</module>
         <module platform="iphone">dk.napp.social</module>
         <module platform="iphone">com.shareourideas.locale</module>
+        <module platform="iphone" version="0.4.5">tibar</module>
+        <module platform="iphone">com.kosso.cookiejar</module>
     </modules>
     <deployment-targets>
         <target device="android">false</target>
@@ -53,5 +54,5 @@
         <target device="mobileweb">false</target>
         <target device="tizen">false</target>
     </deployment-targets>
-    <sdk-version>3.2.0.GA</sdk-version>
+    <sdk-version>3.4.0.GA</sdk-version>
 </ti:app>

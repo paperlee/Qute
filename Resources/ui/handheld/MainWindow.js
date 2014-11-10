@@ -27,6 +27,7 @@ var need_refresh = false;
 var loveds = [];
 var history = [];
 var historyRows = [];
+var historyIds = [];
 var lovedRows = [];
 var iOS7 = isIOS7Plus();
 var theTop = iOS7 ? 20 : 0;
@@ -46,10 +47,13 @@ var ios7;
 var SCANNER_PIC_PLACEHOLDER_URL = '/images/pic_placeholder.png';
 var TABLE_CELL_HEIGHT = 60;
 var patt_http = /^(http|https)/gi;
+var patt_web = /^bit\.ly|^www\.|^tinyurl\.com|^goo\.gl|[a-zA-Z0-9\-]+\.(com|edu|gov|int|mil|net|org|biz|arpa|info|name|pro|aero|coop|museum|[a-zA-Z]{2}([\/]+[a-zA-Z0-9\/\-\?\$\=]*$|$))/g;
 var fb = require('facebook');
 var Toast = require('ui/handheld/iToast');
 var Loading = require('ui/handheld/iLoading');
 var SettingsWindow = require('ui/handheld/SettingsWindow');
+var Keys = require('keys');
+var LikedAnimation = require('ui/handheld/LikedAnimation');
 //var Login = require('ui/handheld/Login');
 
 var QRRow = require('ui/handheld/QRRow');
@@ -115,13 +119,14 @@ function MainWindow() {
 	var TiBar = require('tibar');
 
 	scannerButton.addEventListener('click', function() {
-		Ti.API.info('!!Hi You click the button');
+		Ti.API.info('Start scanning');
 		TiBar.scan({
 			// simple configuration for iPhone simulator
 			configure : {
 				classType : "ZBarReaderViewController",
 				sourceType : "Camera",
 				cameraMode : "Sampling",
+				videoQuality : "UIImagePickerControllerQualityTypeIFrame960x540",
 				config : {
 					"showsCameraControls" : true,
 					"showsHelpOnFail" : true,
@@ -132,17 +137,17 @@ function MainWindow() {
 				symbol : {
 					"QR-Code" : true,
 					"PDF417" : true,
-					"CODE-128" : false,
-					"CODE-39" : false,
-					"I25" : false,
-					"DataBar" : false,
-					"DataBar-Exp" : false,
-					"EAN-13" : false,
-					"EAN-8" : false,
-					"UPC-A" : false,
-					"UPC-E" : false,
-					"ISBN-13" : false,
-					"ISBN-10" : false
+					"CODE-128" : true,
+					"CODE-39" : true,
+					"I25" : true,
+					"DataBar" : true,
+					"DataBar-Exp" : true,
+					"EAN-13" : true,
+					"EAN-8" : true,
+					"UPC-A" : true,
+					"UPC-E" : true,
+					"ISBN-13" : true,
+					"ISBN-10" : true
 				}
 			},
 			success : function(data) {
@@ -192,9 +197,7 @@ function MainWindow() {
 					var db = Ti.Database.open('qute');
 					var datetime = new Date().toISOString();
 					var qr_type = -1;
-					Ti.API.info("test result is " + data.barcode.match(patt_http));
-					Ti.API.info("2nd test result is " + data.barcode.match(patt_http));
-					if (data.barcode.match(patt_http) == null) {
+					if (data.barcode.search(patt_http) < 0 && data.barcode.search(patt_web) < 0) {
 						//other type: 1
 						//TODO: add more types
 						Ti.API.info("No. it's not link");
@@ -218,7 +221,10 @@ function MainWindow() {
 					}
 
 					//Save file to local storage
-					var filename_part = "Qute/" + db.lastInsertRowId + ".png";
+					// TODO:careful! too long the file name!
+					var img_file_name = (new Date()).getTime() + '' + db.lastInsertRowId;
+					console.log('new image name is ' + img_file_name);
+					var filename_part = "Qute/" + img_file_name + ".png";
 					//var filename_part = "Qute/" + getUniqueFileName() + ".png";
 					var filename = Ti.Filesystem.applicationDataDirectory + filename_part;
 					var file = Ti.Filesystem.getFile(filename);
@@ -258,15 +264,33 @@ function MainWindow() {
 					};
 
 					var history_result = db.execute('SELECT * FROM history ORDER BY id DESC');
-					history = db2array(history_result);
+					var temp_historys = db2array(history_result);
+					history = temp_historys[0];
+					historyIds = temp_historys[1];
+					temp_historys = null;
+
 					history_amount = history.length;
 					db.close();
 
 					temp = null;
 
-					var newRow = updateTable(newQR);
-					historyRows.unshift(newRow);
+					//var newRow = updateTable(newQR);
+					var newRow = new QRRow(newQR);
+					//Add click row event
+					newRow.addEventListener('click', function(e) {
+						if (e.source.toString() == '[object TiUIButton]') {
+							return;
+						}
 
+						var result = new ResultWindow(e.rowData['itemData'], e.row);
+						self.openWindow(result);
+					});
+					
+					historyRows.unshift(newRow);
+					
+					refreshTable(segmenterIndex);
+					
+					//TODO: Can NOT delete the QR row that just created. Because of updateSection?
 					//show result page
 					var result = new ResultWindow(newQR, newRow);
 					self.openWindow(result);
@@ -274,8 +298,6 @@ function MainWindow() {
 					newRow = null;
 					//Update table after showing result page
 					//updateTable(newQR);
-
-					//TODO:update the main table when do changes in Result page
 				}
 			},
 			cancel : function() {
@@ -428,12 +450,14 @@ function MainWindow() {
 	history_amount = history_result.rowCount;
 	if (history_result.rowCount > 0) {
 		history = [];
+		historyIds = [];
 		var i = 0;
 		//history = db2array(history_result);
 		//var rows = [];
 		while (history_result.isValidRow()) {
 			element = dbRow2Array(history_result);
 			history.push(element);
+			historyIds.push(element.id);
 			row = new QRRow(element);
 			row.name = 'row' + i;
 
@@ -654,11 +678,12 @@ function MainWindow() {
 		Ti.API.info('Deleted item at ' + e.rowData['itemId']);
 		deleteRow(e.rowData['itemId'], e.row);
 		//TODO:delete from local array
+		
 	});
 
 	table.addEventListener('scroll', function(e) {
 		var offset = e.contentOffset.y;
-		Ti.API.info('offset: ' + offset);
+		//Ti.API.info('offset: ' + offset);
 
 		var fadeOut = Ti.UI.createAnimation({
 			opacity : 0,
@@ -705,16 +730,43 @@ function MainWindow() {
 	self.window = loginWin;
 	//self.openWindow(loginWin);
 	}*/
+	
+	var reLoginFB = function(){
+		var keys = new Keys();
+		//login in fb
+		fb.appid = keys.facebook_appid;
+		fb.permissions = ['publish_actions', 'publish_stream', 'read_stream'];
 
+		fb.forceDialogAuth = true;
+		fb.addEventListener('login', function(e) {
+			if (e.success) {
+				// hide login widget in MainWindow
+				//Ti.App.fireEvent('loggedin');
+				
+				Ti.App.Properties.setBool('loggedin',true);
+				
+				//descriptionView.remove(hintToLogInBox);
+				//checkThreadExist(false);
+				
+			} else if (e.error) {
+				alert(e.error);
+			} else if (e.cancelled) {
+				alert('Cancelled');
+			}
+		});
+		keys = null;
+		fb.authorize();
+	};
+	
 	//The login widget box. Check network status, check login status and skipped
 	if (fb.loggedIn) {
 		//Not online or logged in or skipped
 		//Ti.API.info('Is online or not? '+Ti.Network.online);
 		//alert('Is online or not? '+Ti.Network.online);
 		//For version 1.0.0 -> 1.1.0
-		Ti.App.Properties.setBool('loggedin',true);
-	} else if (Ti.App.Properties.getBool('skipped')){
-		//skipped	
+		Ti.App.Properties.setBool('loggedin', true);
+	} else if (Ti.App.Properties.getBool('skipped')) {
+		//skipped
 	} else {
 		// Check if the user is already loggedin once. To avoid network status disconnect problem
 		if (!Ti.App.Properties.getBool('loggedin')) {
@@ -753,37 +805,143 @@ function MainWindow() {
 				//self.remove(loginWidget);
 			});
 
-			Ti.App.addEventListener('loggedIn', function(e) {
+			Ti.App.addEventListener('loggedin', function(e) {
 				//logged in from Result page
+				//Ti.API.info('LOGGED IN REMOVE WIDGET');
 				main.remove(loginWidget);
 			});
+		} else {
+			// User logged in fb once, but unknown reason he/she was logged out
+			// Do re-login
+			if (Ti.Network.online){
+				Ti.API.info('Go relogin fb');
+				Ti.UI.createAlertDialog({
+					title:L('alert_relogin_fb_title'),
+					message:L('alert_relogin_fb_msg')
+				}).show();
+				
+				/*var confirmRelogin = Ti.UI.createOptionDialog({
+					title:L('confirm_relogin_title'),
+					options:[L('confirm_relogin_ok'),L('confirm_relogin_cancel')],
+					cancel:1
+				});
+				
+				confirmRelogin.addEventListener('click',function(e){
+					if (e.index == 0){
+						// Go relogin
+						reLoginFB();
+					} else {
+						// Cancel relogin
+						Ti.App.Properties.setBool('loggedin',false);
+					}
+				});
+				
+				confirmRelogin.show();*/
+				// Will reset the boolean to true after reloggedin
+				Ti.App.Properties.setBool('loggedin',false);
+				reLoginFB();
+				//Ti.App.Properties.setBool('loggedin',false);
+			}
 		}
 	}
 
-	function updateTableRows() {
-		//var now = new Date();
-		Ti.API.info('UPDATED TABLE');
-		var db = Ti.Database.open('qute');
-		var history_result = db.execute('SELECT * FROM history ORDER BY id DESC');
-		history_amount = history_result.rowCount;
-		if (history_result.rowCount > 0) {
-			//history = db2array(history_result);
-			history = [];
-			historyRows = [];
-			loveds = [];
-			lovedRows = [];
-			var row;
-			var element;
-			var i = 0;
-			while (history_result.isValidRow()) {
-				element = dbRow2Array(history_result);
-				history.push(element);
+	/*function updateTableRows() {
+	 //var now = new Date();
+	 Ti.API.info('UPDATED TABLE');
+	 var db = Ti.Database.open('qute');
+	 var history_result = db.execute('SELECT * FROM history ORDER BY id DESC');
+	 history_amount = history_result.rowCount;
+	 if (history_result.rowCount > 0) {
+	 //history = db2array(history_result);
+	 history = [];
+	 historyRows = [];
+	 loveds = [];
+	 lovedRows = [];
+	 var row;
+	 var element;
+	 var i = 0;
+	 while (history_result.isValidRow()) {
+	 element = dbRow2Array(history_result);
+	 history.push(element);
 
-				row = new QRRow(element);
-				row.name = 'row' + i;
+	 row = new QRRow(element);
+	 row.name = 'row' + i;
+
+	 //Add click row event
+	 row.addEventListener('click', function(e) {
+	 if (e.source.toString() == '[object TiUIButton]') {
+	 return;
+	 }
+
+	 var result = new ResultWindow(e.rowData['itemData'], e.row);
+	 self.openWindow(result);
+	 });
+
+	 historyRows.push(row);
+
+	 if (element['loved'] == 1) {
+	 loveds.push(element);
+	 lovedRows.push(row);
+	 }
+
+	 i++;
+	 history_result.next();
+	 }
+	 } else {
+	 history = [];
+	 historyRows = [];
+	 loveds = [];
+	 lovedRows = [];
+	 }
+
+	 }*/
+	
+	// Listen to loved event. Show animation
+	Ti.App.addEventListener('loved',function(e){
+		var lovedView = new LikedAnimation();
+		main.add(lovedView);
+		
+		var lovedAnimationDone = function(){
+			// kill the animation view
+			lovedView.removeEventListener('animationDone',lovedAnimationDone);
+			main.remove(lovedView);
+			lovedView = null;
+		};
+		
+		lovedView.addEventListener('animationDone',lovedAnimationDone);
+	});
+	
+	// Listen to end_syncing event
+	Ti.App.addEventListener('end_syncing', function(e) {
+		var changed_ids = e.changed_ids;
+		var insert_ids = e.insert_ids;
+		console.log('This time syncing changed ' + changed_ids.length + ' items and inserted ' + insert_ids.length + ' items.');
+		if (changed_ids.length + insert_ids.length > 0) {
+			// Do refresh only if there were something changed or inserted
+			var db = Ti.Database.open('qute');
+			// TODO:debug
+			changed_ids.forEach(function(element, key, array) {
+				// TODO: can't find match
+				var at = historyIds.indexOf(element);
+				if (at >= 0) {
+					//Ti.API.info('found match at ' + at + '. History item is ' + history[at]);
+					historyRows[at].fireEvent('status_updated');
+					var newDataRow = db.execute('SELECT * FROM history WHERE id=?', element);
+					history[at] = dbRow2Array(newDataRow);
+					newDataRow = null;
+				} else {
+					Ti.API.info('Error? Can\'t found match');
+				}
+			});
+
+			// Insert new rows
+			insert_ids.forEach(function(element, key, array) {
+				var newDataRow = db.execute('SELECT * FROM history WHERE id=?', element);
+				var newData = dbRow2Array(newDataRow);
+				var newRow = new QRRow(newData);
 
 				//Add click row event
-				row.addEventListener('click', function(e) {
+				newRow.addEventListener('click', function(e) {
 					if (e.source.toString() == '[object TiUIButton]') {
 						return;
 					}
@@ -792,24 +950,23 @@ function MainWindow() {
 					self.openWindow(result);
 				});
 
-				historyRows.push(row);
+				history.unshift(newData);
+				historyIds.unshift(element);
+				historyRows.unshift(newRow);
 
-				if (element['loved'] == 1) {
-					loveds.push(element);
-					lovedRows.push(row);
-				}
+				newDataRow = null;
+				newRow = null;
+			});
 
-				i++;
-				history_result.next();
+			if (insert_ids.length > 0) {
+				// TODO: Listener not work after refreshTable!! (updateSection)
+				refreshTable(segmenterIndex);
+
 			}
-		} else {
-			history = [];
-			historyRows = [];
-			loveds = [];
-			lovedRows = [];
-		}
 
-	}
+			db.close();
+		}
+	});
 
 	function refreshTable(section) {
 		//section types: 0 history  1 loved
@@ -889,17 +1046,25 @@ function MainWindow() {
 			hasExtraSpace = false;
 		}
 
-		table.updateSection(segmenterHeader, 1);
+		table.updateSection(1, segmenterHeader);
 
 	}
 
 	function deleteRow(itemId, row) {
 		//delete from db
 		var db = Ti.Database.open('qute');
-		var delete_item_result = db.execute('SELECT img,post_id,from_me FROM history WHERE id=?', itemId);
+		var delete_item_result = db.execute('SELECT img,post_id,from_me,sync_address FROM history WHERE id=?', itemId);
 		var img_url = delete_item_result.fieldByName('img');
 		var post_id = delete_item_result.fieldByName('post_id');
 		var from_me = delete_item_result.fieldByName('from_me');
+
+		// Assign sync_key to identify shall not sync afterward
+		var sync_key = delete_item_result.fieldByName('sync_address');
+		if (sync_key == 'no') {
+			// fetch file name from image name
+			var img_name = img_url.split('Qute/')[1];
+			sync_key = img_name.split('.')[0];
+		}
 
 		if (post_id !== null && parseInt(post_id, 10) != -1 && parseInt(post_id, 10) != 0 && from_me) {
 			//the QR is exised in FB Qute
@@ -927,12 +1092,15 @@ function MainWindow() {
 
 							db.execute('DELETE FROM history WHERE id=?', itemId);
 
+							db.execute('INSERT INTO _deleted (deleted_key) VALUES (?)', sync_key);
+
 							var deleted_row_index = historyRows.indexOf(row);
 
 							if (deleted_row_index > -1) {
 								Ti.API.info('deleted row is at ' + deleted_row_index);
 								historyRows.splice(deleted_row_index, 1);
 								history.splice(deleted_row_index, 1);
+								historyIds.splice(deleted_row_index,1);
 								history_amount = historyRows.length;
 							} else {
 								//TODO:handle unknown error
@@ -999,6 +1167,7 @@ function MainWindow() {
 					Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory + img_url).deleteFile();
 
 					db.execute('DELETE FROM history WHERE id=?', itemId);
+					db.execute('INSERT INTO _deleted (deleted_key) VALUES (?)', sync_key);
 
 					var deleted_row_index = historyRows.indexOf(row);
 
@@ -1006,6 +1175,7 @@ function MainWindow() {
 						Ti.API.info('deleted row is at ' + deleted_row_index);
 						historyRows.splice(deleted_row_index, 1);
 						history.splice(deleted_row_index, 1);
+						historyIds.splice(deleted_row_index,1);
 						history_amount = historyRows.length;
 					} else {
 						//not found in history row. something wrong
@@ -1052,10 +1222,14 @@ function MainWindow() {
 				}
 			});
 		} else {
+			Ti.API.info('Deleting row at '+itemId);
 			//Delete local db and img
 			Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory + img_url).deleteFile();
+			
+			Ti.API.info('22 Deleting row at '+itemId);
 
 			db.execute('DELETE FROM history WHERE id=?', itemId);
+			db.execute('INSERT INTO _deleted (deleted_key) VALUES (?)', sync_key);
 
 			var deleted_row_index = historyRows.indexOf(row);
 
@@ -1063,6 +1237,7 @@ function MainWindow() {
 				Ti.API.info('deleted row is at ' + deleted_row_index);
 				historyRows.splice(deleted_row_index, 1);
 				history.splice(deleted_row_index, 1);
+				historyIds.splice(deleted_row_index,1);
 				history_amount = historyRows.length;
 			} else {
 				//not found in history row. something wrong
@@ -1138,6 +1313,8 @@ function MainWindow() {
 	}
 
 	function updateTable(newData) {
+		// TODO: Bug!! Can't add new row after sync(downloaded N QR from dropbox)
+
 		//Add new scanned row into table
 		var row = new QRRow(newData);
 
@@ -1153,7 +1330,7 @@ function MainWindow() {
 
 		table.insertRowBefore(0, row);
 
-		segmenterHeader = table.sections[1];
+		//segmenterHeader = table.sections[1];
 
 		if (hasExtraSpace) {
 			segmenterHeader.remove(segmenterHeader.rows[segmenterHeader.rows.length - 1]);
@@ -1180,7 +1357,7 @@ function MainWindow() {
 			hasExtraSpace = false;
 		}
 
-		table.updateSection(segmenterHeader, 1);
+		table.updateSection(1, segmenterHeader);
 
 		return row;
 
@@ -1192,14 +1369,19 @@ function MainWindow() {
 
 function db2array(rows) {
 	var returnArray = [];
+	var ids = [];
 
 	var fieldCount;
+	
+	fieldCount = rows.fieldCount;
+	
+	// After Ti 3.3.0, fieldCount had been removed from SDK
 	//fieldCount is property in Android
-	if (Ti.Platform.name === 'android') {
+	/*if (Ti.Platform.name === 'android') {
 		fieldCount = rows.fieldCount;
 	} else {
 		fieldCount = rows.fieldCount();
-	}
+	}*/
 
 	var obj = {};
 
@@ -1210,19 +1392,24 @@ function db2array(rows) {
 		}
 		console.log(obj);
 		returnArray.push(obj);
+		ids.push(obj.id);
 		rows.next();
 	}
-	console.log(returnArray);
-	return returnArray;
+	//console.log(returnArray);
+	return [returnArray, ids];
 }
 
 function dbRow2Array(row) {
 	var fieldCount;
-	if (Ti.Platform.name === 'android') {
+	
+	fieldCount = row.fieldCount;
+	
+	// After Ti 3.3.0, fieldCount() had been removed from SDK
+	/*if (Ti.Platform.name === 'android') {
 		fieldCount = row.fieldCount;
 	} else {
 		fieldCount = row.fieldCount();
-	}
+	}*/
 
 	var obj = {};
 	for (var i = 0; i < fieldCount; i++) {
@@ -1267,9 +1454,9 @@ function aspectFill(src, cw, ch) {
 	return ctn;
 }
 
-function getUniqueFileName(){
+function getUniqueFileName() {
 	var now = new Date();
-	var str = ''+now.getFullYear()+now.getMonth()+now.getDate()+now.getHours()+now.getMinutes()+now.getSeconds()+'';
+	var str = '' + now.getFullYear() + now.getMonth() + now.getDate() + now.getHours() + now.getMinutes() + now.getSeconds() + '';
 	return str;
 }
 

@@ -10,13 +10,82 @@ var langs = ['en', 'zh-Hant', 'zh-Hans'];
 var langsName = ['English', '繁體中文', '简体中文'];
 
 var locale = require('com.shareourideas.locale');
+var dropbox = require('dropbox');
+var cookiejar = require('com.kosso.cookiejar');
+
+var Sync = require('sync');
+var Toast = require('ui/handheld/iToast');
 
 var URL_QUTE = 'https://www.facebook.com/pages/Qute/368537286624382';
 
-function SettingsWindow() {
+function isIOS7Plus() {
+	// iOS-specific test
+	if (Titanium.Platform.name == 'iPhone OS') {
+		var version = Titanium.Platform.version.split(".");
+		var major = parseInt(version[0], 10);
 
+		// Can only test this support on a 3.2+ device
+		if (major >= 7) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function db2array(rows) {
+
+	var returnArray = [];
+
+	var fieldCount;
+	
+	fieldCount = rows.fieldCount;
+	
+	// After Ti 3.3.0, fieldCount() had been removed from SDK
+	//fieldCount is property in Android
+	/*if (Ti.Platform.name === 'android') {
+		fieldCount = rows.fieldCount;
+	} else {
+		fieldCount = rows.fieldCount();
+	}*/
+
+	var obj = {};
+
+	while (rows.isValidRow()) {
+		obj = new Object();
+		for (var i = 0; i < fieldCount; i++) {
+			obj[rows.fieldName(i)] = rows.field(i);
+		}
+		console.log(obj);
+		returnArray.push(obj);
+		rows.next();
+	}
+	console.log(returnArray);
+	return returnArray;
+}
+
+function toFormatedDateString(datetime) {
+	var yyyy = datetime.getFullYear();
+	var mon = datetime.getMonth() + 1;
+	var dd = datetime.getDate();
+	var hh = datetime.getHours();
+	var mm = datetime.getMinutes();
+	mm = '0' + mm;
+	mm = mm.slice(-2);
+	var pmam = 'AM';
+	if (hh > 12) {
+		hh -= 12;
+		pmam = 'PM';
+	}
+	var timeStr = yyyy + '/' + mon + '/' + dd + ' ' + hh + ':' + mm + ' ' + pmam;
+	return timeStr;
+}
+
+function SettingsWindow() {
+	var sync = new Sync();
+	var adjustedSyncProgressPosition = false;
+	
 	var btnClose = Ti.UI.createButton({
-		title : L('navibar_button_title_cancel'),
+		title : L('navibar_button_title_close'),
 		style : Ti.UI.iPhone.SystemButtonStyle.BAR
 	});
 
@@ -40,9 +109,155 @@ function SettingsWindow() {
 		window : main
 	});
 
-	//TODO:Set uo language! Below code not work!
-	var settingsSection = Ti.UI.createTableViewSection({
+	var powerByDropboxView = Ti.UI.createView({
+		width : Ti.UI.FILL,
+		height : 30,
+		layout : 'horizontal',
+		top : 0
+	});
 
+	var powerByText = Ti.UI.createLabel({
+		font : {
+			fontSize : 12
+		},
+		color : '#999999',
+		text : L('settings_power_by'),
+		left : 100
+	});
+
+	var dropboxImage = Ti.UI.createImageView({
+		image : 'images/icon_dropbox.png',
+		left : 2
+	});
+
+	powerByDropboxView.add(powerByText);
+	powerByDropboxView.add(dropboxImage);
+
+	var latestSyncView = Ti.UI.createView({
+		width : Ti.UI.FILL,
+		height : 30,
+		layout : 'horizontal',
+		top : 30
+	});
+
+	var latestSyncTitle = Ti.UI.createLabel({
+		font : {
+			fontSize : 12,
+			fontStyle : 'italic'
+		},
+		color : '#999999',
+		text : L('settings_latest_sync'),
+		left : 64,
+		top : 6
+	});
+
+	var latest_sync_date_string = Ti.App.Properties.getString('latestSync');
+	// TODO: Check if not yet sync
+	if (latest_sync_date_string != 'none') {
+		latest_sync_date_string = toFormatedDateString(new Date(latest_sync_date_string));
+		//latest_sync_date_string = (new Date(latest_sync_date_string)).toLocaleString();
+	}
+
+	var latestSyncDate = Ti.UI.createLabel({
+		font : {
+			fontSize : 12,
+			fontWeight : 'bold',
+			fontFamily : 'monospace'
+		},
+		color : '#999999',
+		text : latest_sync_date_string,
+		left : 2,
+		top : 9
+	});
+
+	latestSyncView.add(latestSyncTitle);
+	latestSyncView.add(latestSyncDate);
+
+	var syncFooterView = Ti.UI.createView({
+		width : Ti.UI.FILL,
+		height : 30,
+		clipMode : Ti.UI.iOS.CLIP_MODE_ENABLED
+	});
+
+	syncFooterView.add(powerByDropboxView);
+	syncFooterView.add(latestSyncView);
+
+	//var transform_matrix = Ti.UI.create2DMatrix();
+	//transform_matrix.translate(0,-30);
+
+	function applyAnimation(view) {
+		var moveUp = Ti.UI.createAnimation({
+			top : view.top - 30,
+			duration : 600,
+			delay : 4000,
+			autoreverse : false
+		});
+
+		var moveDown = Ti.UI.createAnimation({
+			top : view.top,
+			duration : 600,
+			delay : 10000,
+			autoreverse : false
+		});
+
+		view.animate(moveUp);
+
+		moveUp.addEventListener('complete', function(e) {
+			//console.log('[1]Applied view top: '+view.top);
+			view.animate(moveDown);
+		});
+
+		moveDown.addEventListener('complete', function(e) {
+			//console.log('[2]Applied view top: '+view.top);
+			view.animate(moveUp);
+		});
+	}
+
+	/*var sync_date_animation1 = Ti.UI.createAnimation({
+	top:-30,
+	duration:600,
+	delay:2000,
+	autoreverse:true,
+	repeat:10
+	});
+
+	var sync_date_animation2 = Ti.UI.createAnimation({
+	top:-30,
+	duration:600,
+	delay:2000,
+	autoreverse:true,
+	repeat:10
+	});*/
+
+	//powerByDropboxView.animate(sync_date_animation1);
+	//latestSyncView.animate(sync_date_animation2);
+
+	if (latest_sync_date_string != 'none') {
+		// Apply animation only if the latest sync date exists
+		applyAnimation(powerByDropboxView);
+		applyAnimation(latestSyncView);
+	}
+
+	function reapplyLatestSyncDate() {
+		var latest_sync_date = Ti.App.Properties.getString('latestSync');
+
+		if (latestSyncDate.text == 'none') {
+			// Need to apply animation
+			applyAnimation(powerByDropboxView);
+			applyAnimation(latestSyncView);
+		}
+
+		if (latest_sync_date != 'none') {
+			latestSyncDate.text = toFormatedDateString(new Date(latest_sync_date));
+		}
+
+	}
+
+
+	//Ti.App.addEventListener('end_syncing', reapplyLatestSyncDate);
+
+	var settingsSection = Ti.UI.createTableViewSection({
+		footerView : syncFooterView
 	});
 
 	var languageRow = Ti.UI.createTableViewRow({
@@ -107,7 +322,7 @@ function SettingsWindow() {
 		systemButton : Ti.UI.iPhone.SystemButton.FLEXIBLE_SPACE
 	});
 
-	var langToolbar = Ti.UI.createToolbar({
+	var langToolbar = Ti.UI.iOS.createToolbar({
 		height : 40,
 		width : '100%',
 		left : 0,
@@ -156,13 +371,13 @@ function SettingsWindow() {
 			languageValue.text = langsName[lang_at];
 
 		}
-		
-		if (lang_at != lang_origin){
+
+		if (lang_at != lang_origin) {
 			btnSave.enabled = true;
 		} else {
 			btnSave.enabled = false;
 		}
-		
+
 		Ti.API.info('The locale is ' + Ti.Platform.locale);
 		Ti.API.info('Current locale is ' + Ti.App.Properties.getString('locale'));
 		Ti.API.info('Custom? ' + Ti.App.Properties.getBool('customLocal'));
@@ -181,8 +396,6 @@ function SettingsWindow() {
 		Ti.API.info('PICKER CANCELED');
 
 	});
-
-	
 
 	var langViewShowAnimation = Ti.UI.createAnimation({
 		duration : 500,
@@ -221,6 +434,132 @@ function SettingsWindow() {
 	});
 
 	settingsSection.add(languageRow);
+
+	var syncRow = Ti.UI.createTableViewRow({
+		height : 44,
+		selectionStyle : Ti.UI.iPhone.TableViewCellSelectionStyle.GRAY
+	});
+
+	var syncTitle = Ti.UI.createLabel({
+		font : {
+			fontSize : 16
+		},
+		text : L('settings_title_sync'),
+		left : 12,
+		color : 'black'
+	});
+	// Show sync progress bar instead of spinning
+	var syncProgress = Ti.UI.createActivityIndicator({
+		style : Ti.UI.iPhone.ActivityIndicatorStyle.DARK
+	});
+	
+	var syncProgressBar = Ti.UI.createProgressBar({
+		width:Ti.UI.FILL,
+		bottom:0,
+		min:0
+	});
+	
+	var syncSwitch = Ti.UI.createSwitch({
+		value : Ti.App.Properties.getBool('syncing'),
+		color : COLOR_PURPLE,
+		right : 12
+	});
+
+	syncRow.add(syncTitle);
+	syncRow.add(syncProgress);
+	syncRow.add(syncSwitch);
+	if (isIOS7Plus()){
+		syncRow.add(syncProgressBar);
+	}
+	
+	syncRow.addEventListener('click', function(e) {
+		//console.log('GoGoGo');
+		if (Ti.App.Properties.getBool('syncing')) {
+			sync.loginAndSync();
+		}
+	});
+
+	settingsSection.add(syncRow);
+
+	// Listen start_syncing and end_syncing event to show syncing status
+	Ti.App.addEventListener('start_syncing', startSyncing);
+
+	function showSyncProgress(e) {
+		syncProgress.left = syncTitle.size.width + syncTitle.left + 10;
+		syncProgress.show();
+		try {
+			syncTitle.removeEventListener('postlayout', showSyncProgress);
+		} catch(err) {
+			Ti.API.info('Error to detach syncTitle listener: ' + err);
+		}
+	}
+	
+	function adjustSyncProgress(e) {
+		syncProgress.left = syncTitle.size.width + syncTitle.left + 10;
+		//syncProgress.show();
+		try {
+			syncTitle.removeEventListener('postlayout', adjustSyncProgress);
+		} catch(err) {
+			Ti.API.info('Error to detach syncTitle listener: ' + err);
+		}
+	}
+	
+	function startSyncing(e) {
+		// Syncing started
+		syncTitle.text = L('settings_title_syncing');
+		syncTitle.addEventListener('postlayout', showSyncProgress);
+		
+	}
+
+	function changeSyncProgress(e) {
+		// Sync progress changed
+		syncTitle.text = L('settings_title_syncing_progress') + ' ' + e['now'] + '/' + e['all'] + ' ...';
+		if (!adjustedSyncProgressPosition){
+			syncTitle.addEventListener('postlayout', adjustSyncProgress);
+		}
+		adjustedSyncProgressPosition = true;
+		syncProgressBar.show();
+		syncProgressBar.max = e['all'];
+		syncProgressBar.value = e['now'];
+	}
+
+
+	Ti.App.addEventListener('sync_progress_changed', changeSyncProgress);
+
+	Ti.App.addEventListener('end_syncing', endSyncing);
+
+	function endSyncing(e) {
+		// End syncing
+		syncTitle.text = L('settings_title_sync');
+		syncProgress.hide();
+		syncProgressBar.hide();
+		
+		reapplyLatestSyncDate();
+	}
+	
+	function dropboxLoginFailHandler(e){
+		Ti.API.info('!!fail to login!!');
+		Ti.App.fireEvent('end_syncing',{changed_ids:[],insert_ids:[]});
+		syncSwitch.value = false;
+		Ti.App.removeEventListener('dropbox_login_fail',dropboxLoginFailHandler);
+		var toast = new Toast(L('toast_dropbox_login_fail'),2000);
+		main.add(toast);
+	}
+
+	syncSwitch.addEventListener('change', function(e) {
+		if (e.value) {
+			console.log('Start connecting to Dropbox');
+			// Try modulized sync functions
+			sync.loginAndSync();
+			Ti.App.addEventListener('dropbox_login_fail',dropboxLoginFailHandler);
+		} else {
+			// do logout
+			// Try modulized sync functions
+			sync.logout();
+			
+			//logout();
+		}
+	});
 
 	var linkSection = Ti.UI.createTableViewSection({
 
@@ -269,7 +608,7 @@ function SettingsWindow() {
 	var authorSection = Ti.UI.createTableViewSection({
 
 	});
-	
+
 	//Tweet me option
 	var tweetMeRow = Ti.UI.createTableViewRow({
 		height : 44,
@@ -282,7 +621,7 @@ function SettingsWindow() {
 	});
 
 	var tweetMeLabel = Ti.UI.createLabel({
-		text : '@paperli',
+		text : '@qute_scanner',
 		color : COLOR_PURPLE,
 		font : {
 			fontSize : 16,
@@ -291,8 +630,8 @@ function SettingsWindow() {
 	});
 
 	tweetMeRow.addEventListener('click', function(e) {
-		if (!Ti.Platform.openURL('twitter://user?screen_name=paperli')){
-			Ti.Platform.openURL('http://twitter.com/paperli');
+		if (!Ti.Platform.openURL('twitter://user?screen_name=qute_scanner')) {
+			Ti.Platform.openURL('http://twitter.com/qute_scanner');
 		}
 	});
 
@@ -300,7 +639,7 @@ function SettingsWindow() {
 	tweetMeRow.add(tweetMeView);
 
 	authorSection.add(tweetMeRow);
-	
+
 	//Email me option
 	var emailMeRow = Ti.UI.createTableViewRow({
 		height : 44,
@@ -313,7 +652,7 @@ function SettingsWindow() {
 	});
 
 	var emailMeLabel = Ti.UI.createLabel({
-		text : 'paper.li@gmail.com',
+		text : 'paper.li+qute@gmail.com',
 		color : COLOR_PURPLE,
 		font : {
 			fontSize : 16,
@@ -325,7 +664,7 @@ function SettingsWindow() {
 		var emailDialog = Ti.UI.createEmailDialog({
 			subject : L('email_subject'),
 			messageBody : L('email_body'),
-			toRecipients : ['paper.li@gmail.com']
+			toRecipients : ['paper.li+qute@gmail.com']
 		});
 		emailDialog.open();
 	});
@@ -334,7 +673,7 @@ function SettingsWindow() {
 	emailMeRow.add(emailMeView);
 
 	authorSection.add(emailMeRow);
-	
+
 	var table = Ti.UI.createTableView({
 		style : Ti.UI.iPhone.TableViewStyle.GROUPED
 	});
@@ -349,7 +688,7 @@ function SettingsWindow() {
 	var claimView = Ti.UI.createView({
 		width : 'auto',
 		height : 60,
-		bottom : 20,
+		bottom : 10,
 		layout : 'vertical'
 	});
 
@@ -379,12 +718,23 @@ function SettingsWindow() {
 		modalStyle : Ti.UI.iPhone.MODAL_PRESENTATION_CURRENT_CONTEXT
 	});
 
+	main.addEventListener('close', function(e) {
+		//Ti.API.info('close: From main');
+		// Release memory
+		Ti.App.removeEventListener('start_syncing', startSyncing);
+		Ti.App.removeEventListener('end_syncing', endSyncing);
+		//Ti.App.removeEventListener('end_syncing', reapplyLatestSyncDate);
+		Ti.App.removeEventListener('sync_progress_changed', changeSyncProgress);
+		Ti.App.removeEventListener('dropbox_login_fail',dropboxLoginFailHandler);
+	});
+
 	btnClose.addEventListener('click', function(e) {
+
 		navWin.close({
 			transition : Ti.UI.iPhone.AnimationStyle.CURL_DOWN
 		});
 	});
-	
+
 	//Save the settings
 	btnSave.addEventListener('click', function(e) {
 
@@ -395,15 +745,15 @@ function SettingsWindow() {
 			//Must re-launch the app to make the change of lang.
 
 			if (lang_at == 0) {
-			 //en
-			 locale.setLocale("en");
-			 } else if (lang_at == 1) {
-			 //zh_TW
-			 locale.setLocale("zh_TW");
-			 } else {
-			 //zh_CN
-			 locale.setLocale("zh_CN");
-			 }
+				//en
+				locale.setLocale("en");
+			} else if (lang_at == 1) {
+				//zh_TW
+				locale.setLocale("zh_TW");
+			} else {
+				//zh_CN
+				locale.setLocale("zh_CN");
+			}
 
 			var alertUpdateLang = Ti.UI.createAlertDialog({
 				title : L('alert_title_lang_changed'),
@@ -412,13 +762,13 @@ function SettingsWindow() {
 
 			alertUpdateLang.show();
 		}
-		
+
 		navWin.close({
 			transition : Ti.UI.iPhone.AnimationStyle.CURL_DOWN
 		});
 
 	});
-	
+
 	return main;
 
 };

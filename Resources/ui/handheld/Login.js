@@ -15,16 +15,20 @@ function isIOS7Plus() {
 //COLORS
 var COLOR_PURPLE = '#9857a7';
 var COLOR_FB = '#3b5998';
-var FACEBOOK_APP_ID = 614174031953325;
+var FACEBOOK_APP_ID;
 
 var history = [];
 var iOS7 = isIOS7Plus();
 var theTop = iOS7 ? 20 : 0;
 var MainWin = require('ui/handheld/MainWindow');
+var Keys = require('keys');
 
 var fb = require('facebook');
 
 function Login() {
+	var keys = new Keys();
+	FACEBOOK_APP_ID = keys.facebook_appid;
+	
 	//TODO:only appear Login page at first launch
 	//alert("loged in: "+fb.loggedIn);
 	

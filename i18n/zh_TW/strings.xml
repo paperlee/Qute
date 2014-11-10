@@ -21,12 +21,20 @@
 	<string name="confirm_title_delete_from_fb">同時刪掉臉書上的討論列嗎？</string>
 	<string name="toast_deleted_from_fb">在臉書上已成功刪除</string>
 	<string name="alert_cant_delete_fb">無法刪除臉書上的討論列。請等下再試一次</string>
+	<string name="alert_relogin_fb_title">無法連結Facebook帳號</string>
+	<string name="alert_relogin_fb_msg">請重新登入</string>
 	
 	<!-- LoadingWidget -->
 	<string name="button_title_login_fb">使用Facebook登入</string>
 	<string name="button_subtitle_join_world">加入世界潮流</string>
 	<string name="button_title_not_now">之後再說</string>
 	<string name="button_title_why">WHY</string>
+	
+	<!-- CommentRow -->
+	<string name="like_success">已支持！</string>
+	<string name="like_unsuccess">系統好像出了問題，請再試試</string>
+	<string name="dislike_success">成功取消支持...</string>
+	<string name="dislike_unsuccess">系統好像出了問題，請再試試</string>
 	
 	<!-- WhyWindow -->
 	<string name="navibar_button_title_close">關閉</string>
@@ -75,6 +83,12 @@
 	<string name="confirm_title_create_post">仍然要將這個內容傳上Qute臉書專頁嗎？</string>
 	<string name="confirm_msg_create_post">這QR碼看起來不是單純的連結</string>
 	<string name="network_down">未連接到網路</string>
+	<string name="result_xhr_error_1_title">網路不通</string>
+	<string name="result_xhr_error_1_msg">檢查網路狀態並稍後試試</string>
+	<string name="result_xhr_error_2_title">連接逾時</string>
+	<string name="result_xhr_error_2_msg">檢查網路狀態並稍後試試</string>
+	<string name="result_xhr_error_others_title">無法連接</string>
+	<string name="result_xhr_error_others_msg">檢查網路狀態並稍後試試</string>
 	
 	<!-- Settings -->
 	<string name="window_title_settings">設定</string>
@@ -89,7 +103,14 @@
 	<string name="navibar_button_title_save">儲存</string>
 	<string name="navibar_button_title_cancel">取消</string>
 	<string name="settings_title_language">語言</string>
+	<string name="settings_title_sync">同步</string>
+	<string name="settings_title_syncing">同步中...</string>
+	<string name="settings_title_syncing_progress">同步中</string>
+	<string name="settings_latest_sync">最近一次同步: </string>
+	<string name="settings_power_by">Powered by</string>
+	<string name="settings_last_sync_never">從未同步</string>
+	<string name="toast_dropbox_login_fail">無法完成Dropbox授權</string>
 	
 	<!-- Toast -->
-	<string name="toast placeholder">嗯...你是想幹嘛?</string>
+	<string name="toast_placeholder">嗯...你是想幹嘛?</string>
 </resources>
