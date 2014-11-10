@@ -16,12 +16,16 @@ function sync() {
 		var rows = db.execute('SELECT * FROM history ORDER BY id DESC');
 
 		var fieldCount;
+		
+		fieldCount = rows.fieldCount;
+		
+		// After Ti. 3.3.0, fieldCount() had been removed from SDK
 		//fieldCount is property in Android
-		if (Ti.Platform.name === 'android') {
+		/*if (Ti.Platform.name === 'android') {
 			fieldCount = rows.fieldCount;
 		} else {
 			fieldCount = rows.fieldCount();
-		}
+		}*/
 
 		var datas = [];
 		// keys saves all image file name to easily search in datas
@@ -470,12 +474,16 @@ function sync() {
 		var end_counter = 0;
 
 		var fieldCount;
+		
+		fieldCount = rows.fieldCount;
+		
+		// After Ti 3.3.0, fieldCount() had been removed from SDK
 		//fieldCount is property in Android
-		if (Ti.Platform.name === 'android') {
+		/*if (Ti.Platform.name === 'android') {
 			fieldCount = rows.fieldCount;
 		} else {
 			fieldCount = rows.fieldCount();
-		}
+		}*/
 
 		var rows_amount = rows.rowCount;
 

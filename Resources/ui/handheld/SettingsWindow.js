@@ -175,7 +175,8 @@ function SettingsWindow() {
 
 	var syncFooterView = Ti.UI.createView({
 		width : Ti.UI.FILL,
-		height : 30
+		height : 30,
+		clipMode : Ti.UI.iOS.CLIP_MODE_ENABLED
 	});
 
 	syncFooterView.add(powerByDropboxView);
