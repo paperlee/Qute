@@ -1046,7 +1046,7 @@ function MainWindow() {
 			hasExtraSpace = false;
 		}
 
-		table.updateSection(segmenterHeader, 1);
+		table.updateSection(1, segmenterHeader);
 
 	}
 
@@ -1357,7 +1357,7 @@ function MainWindow() {
 			hasExtraSpace = false;
 		}
 
-		table.updateSection(segmenterHeader, 1);
+		table.updateSection(1, segmenterHeader);
 
 		return row;
 
@@ -1372,12 +1372,16 @@ function db2array(rows) {
 	var ids = [];
 
 	var fieldCount;
+	
+	fieldCount = rows.fieldCount;
+	
+	// After Ti 3.3.0, fieldCount had been removed from SDK
 	//fieldCount is property in Android
-	if (Ti.Platform.name === 'android') {
+	/*if (Ti.Platform.name === 'android') {
 		fieldCount = rows.fieldCount;
 	} else {
 		fieldCount = rows.fieldCount();
-	}
+	}*/
 
 	var obj = {};
 
@@ -1397,11 +1401,15 @@ function db2array(rows) {
 
 function dbRow2Array(row) {
 	var fieldCount;
-	if (Ti.Platform.name === 'android') {
+	
+	fieldCount = row.fieldCount;
+	
+	// After Ti 3.3.0, fieldCount() had been removed from SDK
+	/*if (Ti.Platform.name === 'android') {
 		fieldCount = row.fieldCount;
 	} else {
 		fieldCount = row.fieldCount();
-	}
+	}*/
 
 	var obj = {};
 	for (var i = 0; i < fieldCount; i++) {

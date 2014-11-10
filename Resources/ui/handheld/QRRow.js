@@ -229,11 +229,15 @@ function aspectFill(src, cw, ch) {
 
 function dbRow2Array(row){
 	var fieldCount;
-	if (Ti.Platform.name === 'android'){
+	
+	fieldCount = row.fieldCount;
+	
+	// After Ti 3.3.0, fieldCount() had been removed from SDK
+	/*if (Ti.Platform.name === 'android'){
 		fieldCount = row.fieldCount;
 	} else {
 		fieldCount = row.fieldCount();
-	}
+	}*/
 	
 	var obj = {};
 	for (var i = 0; i < fieldCount; i++){

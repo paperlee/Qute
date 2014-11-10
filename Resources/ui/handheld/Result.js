@@ -158,7 +158,7 @@ function Result(qrData, qrRow) {
 		}, {
 			type : Ti.UI.iOS.ATTRIBUTE_FOREGROUND_COLOR,
 			value : COLOR_LINK,
-			range : [putOnlineStr.indexOf('Qute'), ('Qute').length]
+			range : [putOnlineStr.indexOf('Qute'), 4]
 		}]
 	});
 
@@ -264,7 +264,7 @@ function Result(qrData, qrRow) {
 	var pullDownInstructionView = Ti.UI.createView({
 		width : 320,
 		height : 44,
-		backgroundColor:'#00000000'
+		backgroundColor:'transparent'
 	});
 
 	var guideTopBg = Ti.UI.createView({
@@ -824,7 +824,7 @@ function Result(qrData, qrRow) {
 					sayPanel.height = 44;
 					say.height = 'auto';
 					sayPanelHeader.headerView = sayPanel;
-					table.updateSection(sayPanelHeader, 1);
+					table.updateSection(1, sayPanelHeader);
 
 					fb.requestWithGraphPath('' + qrData['post_id'] + '?fields=comments', {}, 'GET', function(e) {
 						if (e.success) {
@@ -1379,7 +1379,8 @@ function Result(qrData, qrRow) {
 		backgroundColor : '#00000000',
 		scrollsToTop : true,
 		separatorStyle : Ti.UI.iPhone.TableViewCellSelectionStyle.NONE,
-		headerPullView : pullDownInstructionView
+		headerPullView : pullDownInstructionView,
+		pullBackgroundColor : 'transparent'
 	});
 	
 	//Scroll tableview to make sure the result text visible
@@ -1621,7 +1622,7 @@ function Result(qrData, qrRow) {
 		self.add(loadingView);*/
 
 		// note: fql have to be in unicode encode and > is %3E
-		var query_url = 'https://graph.facebook.com/' + 'fql?q=' + 'SELECT+post_id+FROM+stream+WHERE+source_id=368537286624382' + '+AND+strpos(message,%27' + encodeURIComponent(qrData['raw']) + '%27)%3E=0' + '&access_token=' + fb.accessToken;
+		var query_url = 'https://graph.facebook.com/v2.0/' + 'fql?q=' + 'SELECT+post_id+FROM+stream+WHERE+source_id=368537286624382' + '+AND+strpos(message,%27' + encodeURIComponent(qrData['raw']) + '%27)%3E=0' + '&access_token=' + fb.accessToken;
 		console.log('Query URL is '+query_url);
 		//alert(query_url);
 		//Ti.UI.Clipboard.setText(query_url);
@@ -1725,6 +1726,7 @@ function Result(qrData, qrRow) {
 						return;
 					}
 
+					// Posting...
 					if (qrData.qrtype == 0) {
 						fb.requestWithGraphPath('368537286624382/feed', {
 							message : qrData['raw'],
@@ -2283,7 +2285,7 @@ function Result(qrData, qrRow) {
 		}
 
 		temp_row = null;
-		table.updateSection(sayPanelHeader, 1);
+		table.updateSection(1, sayPanelHeader);
 
 	}
 

@@ -37,12 +37,16 @@ function db2array(rows) {
 	var returnArray = [];
 
 	var fieldCount;
+	
+	fieldCount = rows.fieldCount;
+	
+	// After Ti 3.3.0, fieldCount() had been removed from SDK
 	//fieldCount is property in Android
-	if (Ti.Platform.name === 'android') {
+	/*if (Ti.Platform.name === 'android') {
 		fieldCount = rows.fieldCount;
 	} else {
 		fieldCount = rows.fieldCount();
-	}
+	}*/
 
 	var obj = {};
 
