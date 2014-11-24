@@ -1093,8 +1093,10 @@ function MainWindow() {
 							db.execute('DELETE FROM history WHERE id=?', itemId);
 
 							db.execute('INSERT INTO _deleted (deleted_key) VALUES (?)', sync_key);
-
-							var deleted_row_index = historyRows.indexOf(row);
+							
+							// Find deleting index from historyIds instead of historyRows (too many variation)
+							//var deleted_row_index = historyRows.indexOf(row);
+							var deleted_row_index = historyIds.indexOf(itemId);
 
 							if (deleted_row_index > -1) {
 								Ti.API.info('deleted row is at ' + deleted_row_index);
@@ -1168,8 +1170,10 @@ function MainWindow() {
 
 					db.execute('DELETE FROM history WHERE id=?', itemId);
 					db.execute('INSERT INTO _deleted (deleted_key) VALUES (?)', sync_key);
-
-					var deleted_row_index = historyRows.indexOf(row);
+					
+					// Find deleting index by historyIds instead of historyRows
+					//var deleted_row_index = historyRows.indexOf(row);
+					var deleted_row_index = historyIds.indexOf(itemId);
 
 					if (deleted_row_index > -1) {
 						Ti.API.info('deleted row is at ' + deleted_row_index);
@@ -1231,7 +1235,9 @@ function MainWindow() {
 			db.execute('DELETE FROM history WHERE id=?', itemId);
 			db.execute('INSERT INTO _deleted (deleted_key) VALUES (?)', sync_key);
 
-			var deleted_row_index = historyRows.indexOf(row);
+			// Find deleting index by historyIds instead of historyRows
+			//var deleted_row_index = historyRows.indexOf(row);
+			var deleted_row_index = historyIds.indexOf(itemId);
 
 			if (deleted_row_index > -1) {
 				Ti.API.info('deleted row is at ' + deleted_row_index);
