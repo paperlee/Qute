@@ -735,7 +735,7 @@ function Result(qrData, qrRow) {
 
 		sayPanel.height = say.height = 60;
 		sayPanelHeader.headerView = sayPanel;
-		table.updateSection(sayPanelHeader, 1);
+		table.updateSection(1, sayPanelHeader);
 	});
 
 	say.addEventListener('change', function(e) {
