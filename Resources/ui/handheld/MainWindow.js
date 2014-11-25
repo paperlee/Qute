@@ -194,7 +194,7 @@ function MainWindow() {
 						qr_type = 0;
 					}
 
-					db.execute('INSERT INTO history (title, date, qrtype, content, raw, img, loved, last_update, from_me) VALUES (?,?,?,?,?,?,?,?,?)', data.barcode, datetime, qr_type, data.barcode, data.barcode, "none", 0, datetime, 0);
+					//db.execute('INSERT INTO history (title, date, qrtype, content, raw, img, loved, last_update, from_me) VALUES (?,?,?,?,?,?,?,?,?)', data.barcode, datetime, qr_type, data.barcode, data.barcode, "none", 0, datetime, 0);
 					
 					//select/create directory
 					var foldername = Ti.Filesystem.applicationDataDirectory + "Qute/";
@@ -205,7 +205,7 @@ function MainWindow() {
 
 					//Save file to local storage
 					// TODO:careful! too long the file name!
-					var img_file_name = (new Date()).getTime() + '' + db.lastInsertRowId;
+					var img_file_name = (new Date()).getTime() + '' + (db.lastInsertRowId + 1);
 					console.log('new image name is ' + img_file_name);
 					var filename_part = "Qute/" + img_file_name + ".png";
 					//var filename_part = "Qute/" + getUniqueFileName() + ".png";
@@ -230,8 +230,9 @@ function MainWindow() {
 
 					//temp = null;
 
-					db.execute('UPDATE history SET img=? WHERE id=?', filename_part, db.lastInsertRowId);
-
+					//db.execute('UPDATE history SET img=? WHERE id=?', filename_part, db.lastInsertRowId);
+					db.execute('INSERT INTO history (title, date, qrtype, content, raw, img, loved, last_update, from_me) VALUES (?,?,?,?,?,?,?,?,?)', data.barcode, datetime, qr_type, data.barcode, data.barcode, filename_part, 0, datetime, 0);					
+					
 					//alert(new_id.fieldByName('id'));
 
 					//TODO: post_id will be only gotten after upload or contacting fb api. need to be consider properly
@@ -246,16 +247,14 @@ function MainWindow() {
 						loved : 0
 					};
 
-					var history_result = db.execute('SELECT * FROM history ORDER BY id DESC');
+					/*var history_result = db.execute('SELECT * FROM history ORDER BY id DESC');
 					var temp_historys = db2array(history_result);
 					history = temp_historys[0];
 					historyIds = temp_historys[1];
 					temp_historys = null;
 
 					history_amount = history.length;
-					db.close();
-
-					temp = null;
+					
 
 					//var newRow = updateTable(newQR);
 					var newRow = new QRRow(newQR);
@@ -271,7 +270,25 @@ function MainWindow() {
 					
 					historyRows.unshift(newRow);
 					
-					refreshTable(segmenterIndex);
+					refreshTable(segmenterIndex);*/
+					
+					db.close();
+
+					temp = null; // temp imageview
+					
+					var newRow = new QRRow(newQR);
+					//Add click row event
+					newRow.addEventListener('click', function(e) {
+						if (e.source.toString() == '[object TiUIButton]') {
+							return;
+						}
+
+						var result = new ResultWindow(e.rowData['itemData'], e.row);
+						self.openWindow(result);
+					});
+					
+					// broadcast the event to refresh the table
+					self.fireEvent('new',{newQR:newQR,newRow:newRow});
 					
 					//TODO: Can NOT delete the QR row that just created. Because of updateSection?
 					//show result page
@@ -831,6 +848,24 @@ function MainWindow() {
 			}
 		}
 	}
+	
+	self.addEventListener('new',function(e){
+		Ti.API.info('Inserting new QR code into tableview');
+		var newQR = e.newQR; // data
+		var newRow = e.newRow; // cell
+		
+		var history_result = db.execute('SELECT * FROM history ORDER BY id DESC');
+		var temp_historys = db2array(history_result);
+		history = temp_historys[0];
+		historyIds = temp_historys[1];
+		temp_historys = null;
+		
+		history_amount = history.length;
+					
+		historyRows.unshift(newRow);
+		refreshTable(segmenterIndex);
+		
+	});
 	
 	// Listen to loved event. Show animation
 	Ti.App.addEventListener('loved',function(e){
