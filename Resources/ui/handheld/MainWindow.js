@@ -34,7 +34,7 @@ var theTop = iOS7 ? 20 : 0;
 var billboardHeight = 160;
 var history_amount;
 var table;
-var blankSpaceHeader;
+//var blankSpaceHeader;
 var segmenterHeader;
 var segmenterIndex = 0;
 var scannerPicOverlayHeader;
@@ -54,6 +54,7 @@ var Loading = require('ui/handheld/iLoading');
 var SettingsWindow = require('ui/handheld/SettingsWindow');
 var Keys = require('keys');
 var LikedAnimation = require('ui/handheld/LikedAnimation');
+var tableData = [];
 //var Login = require('ui/handheld/Login');
 
 var QRRow = require('ui/handheld/QRRow');
@@ -157,20 +158,6 @@ function MainWindow() {
 
 				Ti.API.info('TiBar success callback!');
 				if (data && data.barcode) {
-					/*var str = '';
-					for (var i in data) {
-					str += "" + i + ": " + data[i] + " ";
-					}
-					Ti.UI.createAlertDialog({
-					title : 'results',
-					message : str
-					}).show();*/
-
-					/*Ti.UI.createAlertDialog({
-					title : "Scan result",
-					message : "Barcode: " + data.barcode + " Symbology:" + data.symbology
-					}).show();*/
-					//Ti.API.info("dir; "+Ti.Filesystem.applicationDataDirectory + 'last.png');
 
 					//adjust image size
 					var temp = Ti.UI.createImageView({
@@ -192,8 +179,6 @@ function MainWindow() {
 					});*/
 
 					//Save to db
-					//history_amount += 1;
-
 					var db = Ti.Database.open('qute');
 					var datetime = new Date().toISOString();
 					var qr_type = -1;
@@ -210,9 +195,7 @@ function MainWindow() {
 					}
 
 					db.execute('INSERT INTO history (title, date, qrtype, content, raw, img, loved, last_update, from_me) VALUES (?,?,?,?,?,?,?,?,?)', data.barcode, datetime, qr_type, data.barcode, data.barcode, "none", 0, datetime, 0);
-					//alert(db.lastInsertRowId);
-					//var new_id = db.execute('SELECT id FROM history WHERE date=?', datetime);
-
+					
 					//select/create directory
 					var foldername = Ti.Filesystem.applicationDataDirectory + "Qute/";
 					var folder = Ti.Filesystem.getFile(foldername);
@@ -251,7 +234,7 @@ function MainWindow() {
 
 					//alert(new_id.fieldByName('id'));
 
-					//TODO: post_id will only get after upload or contacting fb api. need to be consider properly
+					//TODO: post_id will be only gotten after upload or contacting fb api. need to be consider properly
 					var newQR = {
 						title : data.barcode,
 						img : filename_part,
@@ -361,7 +344,7 @@ function MainWindow() {
 		headerView : scannerPicOverlay
 	});
 
-	var blankSpaceHeaderView = Ti.UI.createView({
+	/*var blankSpaceHeaderView = Ti.UI.createView({
 		opacity : 0,
 		height : 20,
 		width : '100%'
@@ -378,7 +361,7 @@ function MainWindow() {
 		selectionStyle : Ti.UI.iPhone.TableViewCellSelectionStyle.NONE
 	});
 
-	blankSpaceHeader.add(blankSpaceRow);
+	blankSpaceHeader.add(blankSpaceRow);*/
 
 	var segmenterRow = Ti.UI.createView({
 		width : '100%',
@@ -544,10 +527,14 @@ function MainWindow() {
 		backgroundColor : '#00ffffff',
 		separatorStyle : Ti.UI.iPhone.TableViewSeparatorStyle.SINGLE_LINE,
 		separatorColor : '#9857a7',
-		sections : [scannerPicOverlayHeader, segmenterHeader],
 		editable : true,
 		moveable : true
 	});
+	
+	tableData[0] = scannerPicOverlayHeader;
+	tableData[1] = segmenterHeader;
+	
+	table.data = tableData;
 
 	Ti.API.info('index of row1 is ' + table.getIndexByName('row1'));
 
