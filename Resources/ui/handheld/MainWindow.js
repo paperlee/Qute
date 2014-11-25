@@ -831,57 +831,6 @@ function MainWindow() {
 			}
 		}
 	}
-
-	/*function updateTableRows() {
-	 //var now = new Date();
-	 Ti.API.info('UPDATED TABLE');
-	 var db = Ti.Database.open('qute');
-	 var history_result = db.execute('SELECT * FROM history ORDER BY id DESC');
-	 history_amount = history_result.rowCount;
-	 if (history_result.rowCount > 0) {
-	 //history = db2array(history_result);
-	 history = [];
-	 historyRows = [];
-	 loveds = [];
-	 lovedRows = [];
-	 var row;
-	 var element;
-	 var i = 0;
-	 while (history_result.isValidRow()) {
-	 element = dbRow2Array(history_result);
-	 history.push(element);
-
-	 row = new QRRow(element);
-	 row.name = 'row' + i;
-
-	 //Add click row event
-	 row.addEventListener('click', function(e) {
-	 if (e.source.toString() == '[object TiUIButton]') {
-	 return;
-	 }
-
-	 var result = new ResultWindow(e.rowData['itemData'], e.row);
-	 self.openWindow(result);
-	 });
-
-	 historyRows.push(row);
-
-	 if (element['loved'] == 1) {
-	 loveds.push(element);
-	 lovedRows.push(row);
-	 }
-
-	 i++;
-	 history_result.next();
-	 }
-	 } else {
-	 history = [];
-	 historyRows = [];
-	 loveds = [];
-	 lovedRows = [];
-	 }
-
-	 }*/
 	
 	// Listen to loved event. Show animation
 	Ti.App.addEventListener('loved',function(e){
@@ -1033,7 +982,8 @@ function MainWindow() {
 			hasExtraSpace = false;
 		}
 
-		table.updateSection(1, segmenterHeader);
+		table.data = tableData;
+		//table.updateSection(1, segmenterHeader);
 
 	}
 
