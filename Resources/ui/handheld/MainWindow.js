@@ -854,6 +854,8 @@ function MainWindow() {
 		var newQR = e.newQR; // data
 		var newRow = e.newRow; // cell
 		
+		var db = Ti.Database.open('qute');
+		
 		var history_result = db.execute('SELECT * FROM history ORDER BY id DESC');
 		var temp_historys = db2array(history_result);
 		history = temp_historys[0];
@@ -864,6 +866,8 @@ function MainWindow() {
 					
 		historyRows.unshift(newRow);
 		refreshTable(segmenterIndex);
+		
+		db.close();
 		
 	});
 	
