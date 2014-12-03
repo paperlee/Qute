@@ -34,7 +34,7 @@ var theTop = iOS7 ? 20 : 0;
 var billboardHeight = 160;
 var history_amount;
 var table;
-var blankSpaceHeader;
+//var blankSpaceHeader;
 var segmenterHeader;
 var segmenterIndex = 0;
 var scannerPicOverlayHeader;
@@ -54,6 +54,7 @@ var Loading = require('ui/handheld/iLoading');
 var SettingsWindow = require('ui/handheld/SettingsWindow');
 var Keys = require('keys');
 var LikedAnimation = require('ui/handheld/LikedAnimation');
+var tableData = [];
 //var Login = require('ui/handheld/Login');
 
 var QRRow = require('ui/handheld/QRRow');
@@ -157,20 +158,6 @@ function MainWindow() {
 
 				Ti.API.info('TiBar success callback!');
 				if (data && data.barcode) {
-					/*var str = '';
-					for (var i in data) {
-					str += "" + i + ": " + data[i] + " ";
-					}
-					Ti.UI.createAlertDialog({
-					title : 'results',
-					message : str
-					}).show();*/
-
-					/*Ti.UI.createAlertDialog({
-					title : "Scan result",
-					message : "Barcode: " + data.barcode + " Symbology:" + data.symbology
-					}).show();*/
-					//Ti.API.info("dir; "+Ti.Filesystem.applicationDataDirectory + 'last.png');
 
 					//adjust image size
 					var temp = Ti.UI.createImageView({
@@ -192,8 +179,6 @@ function MainWindow() {
 					});*/
 
 					//Save to db
-					//history_amount += 1;
-
 					var db = Ti.Database.open('qute');
 					var datetime = new Date().toISOString();
 					var qr_type = -1;
@@ -209,10 +194,8 @@ function MainWindow() {
 						qr_type = 0;
 					}
 
-					db.execute('INSERT INTO history (title, date, qrtype, content, raw, img, loved, last_update, from_me) VALUES (?,?,?,?,?,?,?,?,?)', data.barcode, datetime, qr_type, data.barcode, data.barcode, "none", 0, datetime, 0);
-					//alert(db.lastInsertRowId);
-					//var new_id = db.execute('SELECT id FROM history WHERE date=?', datetime);
-
+					//db.execute('INSERT INTO history (title, date, qrtype, content, raw, img, loved, last_update, from_me) VALUES (?,?,?,?,?,?,?,?,?)', data.barcode, datetime, qr_type, data.barcode, data.barcode, "none", 0, datetime, 0);
+					
 					//select/create directory
 					var foldername = Ti.Filesystem.applicationDataDirectory + "Qute/";
 					var folder = Ti.Filesystem.getFile(foldername);
@@ -222,7 +205,7 @@ function MainWindow() {
 
 					//Save file to local storage
 					// TODO:careful! too long the file name!
-					var img_file_name = (new Date()).getTime() + '' + db.lastInsertRowId;
+					var img_file_name = (new Date()).getTime() + '' + (db.lastInsertRowId + 1);
 					console.log('new image name is ' + img_file_name);
 					var filename_part = "Qute/" + img_file_name + ".png";
 					//var filename_part = "Qute/" + getUniqueFileName() + ".png";
@@ -247,11 +230,12 @@ function MainWindow() {
 
 					//temp = null;
 
-					db.execute('UPDATE history SET img=? WHERE id=?', filename_part, db.lastInsertRowId);
-
+					//db.execute('UPDATE history SET img=? WHERE id=?', filename_part, db.lastInsertRowId);
+					db.execute('INSERT INTO history (title, date, qrtype, content, raw, img, loved, last_update, from_me) VALUES (?,?,?,?,?,?,?,?,?)', data.barcode, datetime, qr_type, data.barcode, data.barcode, filename_part, 0, datetime, 0);					
+					
 					//alert(new_id.fieldByName('id'));
 
-					//TODO: post_id will only get after upload or contacting fb api. need to be consider properly
+					//TODO: post_id will be only gotten after upload or contacting fb api. need to be consider properly
 					var newQR = {
 						title : data.barcode,
 						img : filename_part,
@@ -263,16 +247,14 @@ function MainWindow() {
 						loved : 0
 					};
 
-					var history_result = db.execute('SELECT * FROM history ORDER BY id DESC');
+					/*var history_result = db.execute('SELECT * FROM history ORDER BY id DESC');
 					var temp_historys = db2array(history_result);
 					history = temp_historys[0];
 					historyIds = temp_historys[1];
 					temp_historys = null;
 
 					history_amount = history.length;
-					db.close();
-
-					temp = null;
+					
 
 					//var newRow = updateTable(newQR);
 					var newRow = new QRRow(newQR);
@@ -288,7 +270,25 @@ function MainWindow() {
 					
 					historyRows.unshift(newRow);
 					
-					refreshTable(segmenterIndex);
+					refreshTable(segmenterIndex);*/
+					
+					db.close();
+
+					temp = null; // temp imageview
+					
+					var newRow = new QRRow(newQR);
+					//Add click row event
+					newRow.addEventListener('click', function(e) {
+						if (e.source.toString() == '[object TiUIButton]') {
+							return;
+						}
+
+						var result = new ResultWindow(e.rowData['itemData'], e.row);
+						self.openWindow(result);
+					});
+					
+					// broadcast the event to refresh the table
+					self.fireEvent('new',{newQR:newQR,newRow:newRow});
 					
 					//TODO: Can NOT delete the QR row that just created. Because of updateSection?
 					//show result page
@@ -361,7 +361,7 @@ function MainWindow() {
 		headerView : scannerPicOverlay
 	});
 
-	var blankSpaceHeaderView = Ti.UI.createView({
+	/*var blankSpaceHeaderView = Ti.UI.createView({
 		opacity : 0,
 		height : 20,
 		width : '100%'
@@ -378,7 +378,7 @@ function MainWindow() {
 		selectionStyle : Ti.UI.iPhone.TableViewCellSelectionStyle.NONE
 	});
 
-	blankSpaceHeader.add(blankSpaceRow);
+	blankSpaceHeader.add(blankSpaceRow);*/
 
 	var segmenterRow = Ti.UI.createView({
 		width : '100%',
@@ -544,10 +544,14 @@ function MainWindow() {
 		backgroundColor : '#00ffffff',
 		separatorStyle : Ti.UI.iPhone.TableViewSeparatorStyle.SINGLE_LINE,
 		separatorColor : '#9857a7',
-		sections : [scannerPicOverlayHeader, segmenterHeader],
 		editable : true,
 		moveable : true
 	});
+	
+	tableData[0] = scannerPicOverlayHeader;
+	tableData[1] = segmenterHeader;
+	
+	table.data = tableData;
 
 	Ti.API.info('index of row1 is ' + table.getIndexByName('row1'));
 
@@ -844,57 +848,28 @@ function MainWindow() {
 			}
 		}
 	}
-
-	/*function updateTableRows() {
-	 //var now = new Date();
-	 Ti.API.info('UPDATED TABLE');
-	 var db = Ti.Database.open('qute');
-	 var history_result = db.execute('SELECT * FROM history ORDER BY id DESC');
-	 history_amount = history_result.rowCount;
-	 if (history_result.rowCount > 0) {
-	 //history = db2array(history_result);
-	 history = [];
-	 historyRows = [];
-	 loveds = [];
-	 lovedRows = [];
-	 var row;
-	 var element;
-	 var i = 0;
-	 while (history_result.isValidRow()) {
-	 element = dbRow2Array(history_result);
-	 history.push(element);
-
-	 row = new QRRow(element);
-	 row.name = 'row' + i;
-
-	 //Add click row event
-	 row.addEventListener('click', function(e) {
-	 if (e.source.toString() == '[object TiUIButton]') {
-	 return;
-	 }
-
-	 var result = new ResultWindow(e.rowData['itemData'], e.row);
-	 self.openWindow(result);
-	 });
-
-	 historyRows.push(row);
-
-	 if (element['loved'] == 1) {
-	 loveds.push(element);
-	 lovedRows.push(row);
-	 }
-
-	 i++;
-	 history_result.next();
-	 }
-	 } else {
-	 history = [];
-	 historyRows = [];
-	 loveds = [];
-	 lovedRows = [];
-	 }
-
-	 }*/
+	
+	self.addEventListener('new',function(e){
+		Ti.API.info('Inserting new QR code into tableview');
+		var newQR = e.newQR; // data
+		var newRow = e.newRow; // cell
+		
+		var db = Ti.Database.open('qute');
+		
+		var history_result = db.execute('SELECT * FROM history ORDER BY id DESC');
+		var temp_historys = db2array(history_result);
+		history = temp_historys[0];
+		historyIds = temp_historys[1];
+		temp_historys = null;
+		
+		history_amount = history.length;
+					
+		historyRows.unshift(newRow);
+		refreshTable(segmenterIndex);
+		
+		db.close();
+		
+	});
 	
 	// Listen to loved event. Show animation
 	Ti.App.addEventListener('loved',function(e){
@@ -1046,7 +1021,8 @@ function MainWindow() {
 			hasExtraSpace = false;
 		}
 
-		table.updateSection(1, segmenterHeader);
+		table.data = tableData;
+		//table.updateSection(1, segmenterHeader);
 
 	}
 
@@ -1093,8 +1069,10 @@ function MainWindow() {
 							db.execute('DELETE FROM history WHERE id=?', itemId);
 
 							db.execute('INSERT INTO _deleted (deleted_key) VALUES (?)', sync_key);
-
-							var deleted_row_index = historyRows.indexOf(row);
+							
+							// Find deleting index from historyIds instead of historyRows (too many variation)
+							//var deleted_row_index = historyRows.indexOf(row);
+							var deleted_row_index = historyIds.indexOf(itemId);
 
 							if (deleted_row_index > -1) {
 								Ti.API.info('deleted row is at ' + deleted_row_index);
@@ -1168,8 +1146,10 @@ function MainWindow() {
 
 					db.execute('DELETE FROM history WHERE id=?', itemId);
 					db.execute('INSERT INTO _deleted (deleted_key) VALUES (?)', sync_key);
-
-					var deleted_row_index = historyRows.indexOf(row);
+					
+					// Find deleting index by historyIds instead of historyRows
+					//var deleted_row_index = historyRows.indexOf(row);
+					var deleted_row_index = historyIds.indexOf(itemId);
 
 					if (deleted_row_index > -1) {
 						Ti.API.info('deleted row is at ' + deleted_row_index);
@@ -1231,7 +1211,9 @@ function MainWindow() {
 			db.execute('DELETE FROM history WHERE id=?', itemId);
 			db.execute('INSERT INTO _deleted (deleted_key) VALUES (?)', sync_key);
 
-			var deleted_row_index = historyRows.indexOf(row);
+			// Find deleting index by historyIds instead of historyRows
+			//var deleted_row_index = historyRows.indexOf(row);
+			var deleted_row_index = historyIds.indexOf(itemId);
 
 			if (deleted_row_index > -1) {
 				Ti.API.info('deleted row is at ' + deleted_row_index);
