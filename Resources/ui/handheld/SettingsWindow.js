@@ -9,7 +9,7 @@ var lang_origin = 0;
 var langs = ['en', 'zh-Hant', 'zh-Hans'];
 var langsName = ['English', '繁體中文', '简体中文'];
 
-var locale = require('com.shareourideas.locale');
+//var locale = require('com.shareourideas.locale');
 var dropbox = require('dropbox');
 var cookiejar = require('com.kosso.cookiejar');
 
@@ -260,7 +260,7 @@ function SettingsWindow() {
 		footerView : syncFooterView
 	});
 
-	var languageRow = Ti.UI.createTableViewRow({
+	/*var languageRow = Ti.UI.createTableViewRow({
 		height : 44
 	});
 
@@ -431,9 +431,9 @@ function SettingsWindow() {
 			lang_select = e.rowIndex;
 		});
 
-	});
+	});*/
 
-	settingsSection.add(languageRow);
+	//settingsSection.add(languageRow);
 
 	var syncRow = Ti.UI.createTableViewRow({
 		height : 44,
@@ -736,7 +736,7 @@ function SettingsWindow() {
 	});
 
 	//Save the settings
-	btnSave.addEventListener('click', function(e) {
+	/*btnSave.addEventListener('click', function(e) {
 
 		if (lang_at != lang_origin) {
 			Ti.App.Properties.setString('locale', langs[lang_at]);
@@ -767,7 +767,7 @@ function SettingsWindow() {
 			transition : Ti.UI.iPhone.AnimationStyle.CURL_DOWN
 		});
 
-	});
+	});*/
 
 	return main;
 

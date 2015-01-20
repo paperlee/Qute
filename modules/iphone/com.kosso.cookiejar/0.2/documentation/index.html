@@ -1,0 +1,36 @@
+<h1>cookiejar Titanium Module</h1>
+
+<h2>Description</h2>
+
+<p>Enables the abilty to clear cookies for specified domains from webviews. 
+This is often required for webView based third party sites like Twitter/G+ etc. to totally  log out of their various intent windows and accounts etc. </p>
+
+<h2>Accessing the cookiejar Module</h2>
+
+<p>To access this module from JavaScript, you would do the following:</p>
+
+<pre><code>var cookiejar = require("com.kosso.cookiejar");
+</code></pre>
+
+<p>The cookiejar variable is a reference to the Module object. </p>
+
+<h2>Reference</h2>
+
+<pre><code>var cookiejar = require('com.kosso.cookiejar');
+Ti.API.info("module is =&gt; " + cookiejar);
+</code></pre>
+
+<p>// This will log a user out of their Google account in a webview, if no logout option is available (often the case).</p>
+
+<pre><code>cookiejar.clearWebViewCookies('.google.com');
+cookiejar.clearWebViewCookies('.google.co.uk');
+cookiejar.clearWebViewCookies('accounts.google.com');
+</code></pre>
+
+<h2>Author</h2>
+
+<p>Kosso</p>
+
+<h2>License</h2>
+
+<p>FREEDOM BABY!</p>

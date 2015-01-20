@@ -17,7 +17,7 @@ if (Ti.version < 1.8) {
 
 var DB_VERSION = 0.4;
 
-var locale = require('com.shareourideas.locale');
+//var locale = require('com.shareourideas.locale');
 //var dropbox = require('dropbox');
 //var Keys = require('keys');
 //var keys = new Keys();
@@ -62,7 +62,7 @@ root:'sandbox'
 
 	//TODO:Set uo language! Below code not work!
 	//store current local
-	if (!Ti.App.Properties.hasProperty('locale')) {
+	/*if (!Ti.App.Properties.hasProperty('locale')) {
 		var lang = Ti.Platform.locale;
 		Ti.App.Properties.setString('locale', lang);
 		Ti.App.Properties.setBool('customLocal', false);
@@ -81,7 +81,7 @@ root:'sandbox'
 				locale.setLocale("en");
 			}
 		}
-	}
+	}*/
 
 	//init db
 	var db = Ti.Database.open('qute');

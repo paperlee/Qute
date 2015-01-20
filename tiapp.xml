@@ -39,11 +39,10 @@
         <theme>default</theme>
     </mobileweb>
     <modules>
+        <module platform="iphone" version="1.7.8">dk.napp.social</module>
         <module platform="android" version="3.0.3">facebook</module>
         <module platform="iphone" version="3.2.0">facebook</module>
-        <module platform="iphone" version="1.7.8">dk.napp.social</module>
-        <module platform="iphone">com.shareourideas.locale</module>
-        <module platform="iphone" version="0.4.5">tibar</module>
+        <module platform="iphone" version="0.4.7">tibar</module>
         <module platform="iphone">com.kosso.cookiejar</module>
     </modules>
     <deployment-targets>
