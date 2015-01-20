@@ -77,8 +77,8 @@ function MainWindow() {
 	scannerPicPlaceholder = Ti.UI.createImageView({
 		top : 0,
 		image : SCANNER_PIC_PLACEHOLDER_URL,
-		width : 320,
-		height : 480
+		width : Ti.Platform.displayCaps.platformWidth,
+		height : Ti.Platform.displayCaps.platformHeight
 	});
 
 	/*if (Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory + 'last.png').exists()) {
@@ -166,7 +166,7 @@ function MainWindow() {
 						height : 'auto'
 					});
 
-					var h = 320 * temp.toImage().height / temp.toImage().width;
+					var h = Ti.Platform.displayCaps.platformWidth * temp.toImage().height / temp.toImage().width;
 
 					scannerPicPlaceholder.setHeight(h);
 					scannerPicPlaceholder.setImage(temp.toImage());
@@ -520,7 +520,7 @@ function MainWindow() {
 			height : 'auto'
 		});
 
-		var h = 320 * temp.toImage().height / temp.toImage().width;
+		var h = Ti.Platform.displayCaps.platformWidth * temp.toImage().height / temp.toImage().width;
 		scannerPicPlaceholder.setHeight(h);
 		scannerPicPlaceholder.setImage(temp.toImage());
 
@@ -1098,7 +1098,7 @@ function MainWindow() {
 									height : 'auto'
 								});
 
-								var h = 320 * temp.toImage().height / temp.toImage().width;
+								var h = Ti.Platform.displayCaps.platformWidth * temp.toImage().height / temp.toImage().width;
 								scannerPicPlaceholder.setHeight(h);
 								scannerPicPlaceholder.setImage(temp.toImage());
 
@@ -1110,7 +1110,7 @@ function MainWindow() {
 									height : 'auto'
 								});
 
-								var h = 320 * temp.toImage().height / temp.toImage().width;
+								var h = Ti.Platform.displayCaps.platformWidth * temp.toImage().height / temp.toImage().width;
 								scannerPicPlaceholder.setHeight(h);
 								scannerPicPlaceholder.setImage(temp.toImage());
 
@@ -1174,7 +1174,7 @@ function MainWindow() {
 							height : 'auto'
 						});
 
-						var h = 320 * temp.toImage().height / temp.toImage().width;
+						var h = Ti.Platform.displayCaps.platformWidth * temp.toImage().height / temp.toImage().width;
 						scannerPicPlaceholder.setHeight(h);
 						scannerPicPlaceholder.setImage(temp.toImage());
 
@@ -1186,7 +1186,7 @@ function MainWindow() {
 							height : 'auto'
 						});
 
-						var h = 320 * temp.toImage().height / temp.toImage().width;
+						var h = Ti.Platform.displayCaps.platformWidth * temp.toImage().height / temp.toImage().width;
 						scannerPicPlaceholder.setHeight(h);
 						scannerPicPlaceholder.setImage(temp.toImage());
 
@@ -1272,7 +1272,7 @@ function MainWindow() {
 					height : 'auto'
 				});
 
-				var h = 320 * temp.toImage().height / temp.toImage().width;
+				var h = Ti.Platform.displayCaps.platformWidth * temp.toImage().height / temp.toImage().width;
 				scannerPicPlaceholder.setHeight(h);
 				scannerPicPlaceholder.setImage(temp.toImage());
 
@@ -1284,7 +1284,7 @@ function MainWindow() {
 					height : 'auto'
 				});
 
-				var h = 320 * temp.toImage().height / temp.toImage().width;
+				var h = Ti.Platform.displayCaps.platformWidth * temp.toImage().height / temp.toImage().width;
 				scannerPicPlaceholder.setHeight(h);
 				scannerPicPlaceholder.setImage(temp.toImage());
 

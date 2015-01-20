@@ -262,7 +262,7 @@ function Result(qrData, qrRow) {
 	// TODO: to make backgroundColor in transparent, make change in Titanium sdk and change backgroundColor to clearColor in TiUITableView.m
 	//pull down instruction
 	var pullDownInstructionView = Ti.UI.createView({
-		width : 320,
+		width : Ti.Platform.displayCaps.platformWidth,
 		height : 44,
 		backgroundColor:'transparent'
 	});
@@ -923,8 +923,8 @@ function Result(qrData, qrRow) {
 		opacity : 0
 	});
 
-	var shall_h = Math.round(320 * picFrame.toImage().height / picFrame.toImage().width);
-	picFrame.setWidth(320);
+	var shall_h = Math.round(Ti.Platform.displayCaps.platformWidth * picFrame.toImage().height / picFrame.toImage().width);
+	picFrame.setWidth(Ti.Platform.displayCaps.platformWidth);
 	picFrame.setHeight(shall_h);
 
 	wholeView.add(picFrame);
@@ -1380,7 +1380,7 @@ function Result(qrData, qrRow) {
 		scrollsToTop : true,
 		separatorStyle : Ti.UI.iPhone.TableViewCellSelectionStyle.NONE,
 		headerPullView : pullDownInstructionView,
-		pullBackgroundColor : 'transparent'
+		pullBackgroundColor : '#00000000'
 	});
 	
 	//Scroll tableview to make sure the result text visible
