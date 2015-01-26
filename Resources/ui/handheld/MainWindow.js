@@ -936,6 +936,33 @@ function MainWindow() {
 			if (insert_ids.length > 0) {
 				// TODO: Listener not work after refreshTable!! (updateSection)
 				refreshTable(segmenterIndex);
+				
+				//reassign scanner pic placeholder
+				if (history_amount > 0) {
+					var temp = Ti.UI.createImageView({
+						image : Ti.Filesystem.applicationDataDirectory + history[0]['img'],
+						width : 'auto',
+						height : 'auto'
+					});
+
+					var h = Ti.Platform.displayCaps.platformWidth * temp.toImage().height / temp.toImage().width;
+					scannerPicPlaceholder.setHeight(h);
+					scannerPicPlaceholder.setImage(temp.toImage());
+
+					temp = null;
+				} else {
+					var temp = Ti.UI.createImageView({
+						image : SCANNER_PIC_PLACEHOLDER_URL,
+						width : 'auto',
+						height : 'auto'
+					});
+
+					var h = Ti.Platform.displayCaps.platformWidth * temp.toImage().height / temp.toImage().width;
+					scannerPicPlaceholder.setHeight(h);
+					scannerPicPlaceholder.setImage(temp.toImage());
+
+					temp = null;
+				}
 
 			}
 

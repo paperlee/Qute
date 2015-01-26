@@ -48,7 +48,7 @@ function LoginWidget() {
 
 	var viewFb = Ti.UI.createButton({
 		backgroundColor : COLOR_FB,
-		width : 320 - 100,
+		width : Ti.Platform.displayCaps.platformWidth - 100,
 		height : 50,
 		bottom : 0,
 		left : 0,
