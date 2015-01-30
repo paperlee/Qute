@@ -78,7 +78,7 @@ function MainWindow() {
 		top : 0,
 		image : SCANNER_PIC_PLACEHOLDER_URL,
 		width : Ti.Platform.displayCaps.platformWidth,
-		height : Ti.Platform.displayCaps.platformHeight
+		height : parseInt(1629*Ti.Platform.displayCaps.platformWidth/1080)
 	});
 
 	/*if (Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory + 'last.png').exists()) {

@@ -59,7 +59,10 @@ root:'sandbox'
 	if (!Ti.App.Properties.hasProperty('latestSync')) {
 		Ti.App.Properties.setString('latestSync', 'none');
 	}
-
+	
+	var icloud = require('iCloud');
+	icloud.disableBackupForFolder(Ti.Filesystem.applicationDataDirectory);
+	
 	//TODO:Set uo language! Below code not work!
 	//store current local
 	/*if (!Ti.App.Properties.hasProperty('locale')) {
